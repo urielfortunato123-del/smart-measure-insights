@@ -70,6 +70,11 @@ export const FileUpload = ({ onDataLoaded }: FileUploadProps) => {
         
         setSelectedSheet(measurementSheet.name);
         
+        // Use detected skip rows
+        if (measurementSheet.suggestedSkipRows !== undefined) {
+          setSkipRows(String(measurementSheet.suggestedSkipRows));
+        }
+        
         // Auto-detect column mapping
         const mapping = intelligentColumnMapping(measurementSheet.columns);
         setColumnMapping(mapping);
@@ -97,6 +102,10 @@ export const FileUpload = ({ onDataLoaded }: FileUploadProps) => {
     if (sheet) {
       const mapping = intelligentColumnMapping(sheet.columns);
       setColumnMapping(mapping);
+      // Update skip rows based on detected type
+      if (sheet.suggestedSkipRows !== undefined) {
+        setSkipRows(String(sheet.suggestedSkipRows));
+      }
     }
   };
 
@@ -215,6 +224,14 @@ export const FileUpload = ({ onDataLoaded }: FileUploadProps) => {
 
         {file && sheets.length > 0 && (
           <>
+            {currentSheet?.detectedType && (
+              <div className="p-2 bg-primary/10 rounded-lg">
+                <p className="text-xs text-primary font-medium">
+                  Tipo detectado: {currentSheet.detectedType}
+                </p>
+              </div>
+            )}
+            
             <div className="space-y-2">
               <Label className="text-xs">Planilha (Aba)</Label>
               <Select value={selectedSheet} onValueChange={handleSheetChange}>
@@ -225,6 +242,7 @@ export const FileUpload = ({ onDataLoaded }: FileUploadProps) => {
                   {sheets.map(sheet => (
                     <SelectItem key={sheet.name} value={sheet.name}>
                       {sheet.name} ({sheet.totalRows} linhas)
+                      {sheet.detectedType && ` • ${sheet.detectedType}`}
                     </SelectItem>
                   ))}
                 </SelectContent>

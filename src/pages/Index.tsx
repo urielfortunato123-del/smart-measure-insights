@@ -6,11 +6,12 @@ import { SmartEvolutionChart } from '@/components/dashboard/SmartEvolutionChart'
 import { SmartCompositionChart } from '@/components/dashboard/SmartCompositionChart';
 import { SmartDataTable } from '@/components/dashboard/SmartDataTable';
 import { AlertsPanel } from '@/components/dashboard/AlertsPanel';
+import { AlertDetailModal } from '@/components/dashboard/AlertDetailModal';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { getUniqueValues, demoMeasurements } from '@/data/sampleData';
 import { MeasurementEntry, FilterState } from '@/types/measurement';
-import { calculateSmartStats, generateAlerts, formatCurrency, formatNumber } from '@/lib/analytics';
+import { calculateSmartStats, generateAlerts, formatCurrency, formatNumber, Alert } from '@/lib/analytics';
 import { Ruler, DollarSign, FileText, AlertTriangle, Play, Sparkles } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -23,6 +24,8 @@ const Index = () => {
     disciplina: [],
     dateRange: null
   });
+  const [selectedAlert, setSelectedAlert] = useState<Alert | null>(null);
+  const [alertModalOpen, setAlertModalOpen] = useState(false);
   const { toast } = useToast();
 
   const responsaveis = useMemo(() => getUniqueValues(data, 'responsavel'), [data]);
@@ -61,6 +64,27 @@ const Index = () => {
       description: `${demoMeasurements.length} itens carregados para visualização.`
     });
   }, [toast]);
+
+  const handleAlertClick = useCallback((alert: Alert) => {
+    setSelectedAlert(alert);
+    setAlertModalOpen(true);
+  }, []);
+
+  const handleAlertsKPIClick = useCallback(() => {
+    if (alerts.length > 0) {
+      setSelectedAlert(alerts[0]);
+      setAlertModalOpen(true);
+    }
+  }, [alerts]);
+
+  // Find related item for the selected alert
+  const relatedItem = useMemo(() => {
+    if (!selectedAlert) return undefined;
+    return filteredData.find(item => 
+      item.descricao === selectedAlert.itemDescription ||
+      item.id === selectedAlert.itemId
+    );
+  }, [selectedAlert, filteredData]);
 
   return (
     <div className="flex min-h-screen w-full bg-background">
@@ -108,6 +132,7 @@ const Index = () => {
                       `${stats.valueVsAvg > 0 ? '↑' : '↓'} ${Math.abs(stats.valueVsAvg).toFixed(1)}% ${stats.valueVsAvg > 0 ? 'acima' : 'abaixo'} da média histórica` : undefined}
                     icon={Ruler}
                     variant="default"
+                    clickable={false}
                   />
                   <SmartKPICard
                     title="Valor Total"
@@ -116,6 +141,7 @@ const Index = () => {
                     icon={DollarSign}
                     variant="primary"
                     trend={{ value: stats.valueVsAvg, isPositive: stats.valueVsAvg >= 0, label: 'vs média' }}
+                    clickable={false}
                   />
                   <SmartKPICard
                     title="Itens Lançados"
@@ -123,6 +149,7 @@ const Index = () => {
                     subtitle={stats.reincidentItems > 0 ? `${stats.reincidentItems} reincidentes` : 'registros de medição'}
                     icon={FileText}
                     variant="default"
+                    clickable={false}
                   />
                   <SmartKPICard
                     title="Alertas"
@@ -131,6 +158,8 @@ const Index = () => {
                     icon={AlertTriangle}
                     variant={alerts.length > 0 ? 'danger' : 'success'}
                     aiInsight={alerts.length > 0 ? 'IA detectou inconsistências' : 'Dados dentro do padrão'}
+                    onClick={handleAlertsKPIClick}
+                    clickable={alerts.length > 0}
                   />
                 </div>
 
@@ -142,7 +171,7 @@ const Index = () => {
 
                 {/* Alerts + Data Table */}
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-                  <AlertsPanel alerts={alerts} />
+                  <AlertsPanel alerts={alerts} onAlertClick={handleAlertClick} />
                   <div className="lg:col-span-3">
                     <SmartDataTable data={filteredData} />
                   </div>
@@ -152,6 +181,15 @@ const Index = () => {
           </div>
         </ScrollArea>
       </main>
+
+      {/* Alert Detail Modal */}
+      <AlertDetailModal
+        alert={selectedAlert}
+        open={alertModalOpen}
+        onOpenChange={setAlertModalOpen}
+        relatedItem={relatedItem}
+        allData={filteredData}
+      />
     </div>
   );
 };

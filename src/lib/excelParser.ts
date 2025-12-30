@@ -212,15 +212,54 @@ export function parseSheetData(
   const sheet = workbook.Sheets[sheetName];
   if (!sheet) return [];
 
-  // Convert to JSON with headers from the specified row
+  const range = XLSX.utils.decode_range(sheet['!ref'] || 'A1');
+  
+  // Find the actual header row by looking for recognizable patterns
+  let actualHeaderRow = skipRows;
+  let headerColumns: string[] = [];
+  
+  // Scan rows to find the best header row (one with the most recognizable column names)
+  for (let row = Math.max(0, skipRows - 2); row <= Math.min(skipRows + 5, range.e.r); row++) {
+    const rowCols: string[] = [];
+    let recognizedCount = 0;
+    
+    for (let col = range.s.c; col <= range.e.c; col++) {
+      const cell = sheet[XLSX.utils.encode_cell({ r: row, c: col })];
+      const cellValue = cell ? String(cell.v || '').trim() : '';
+      rowCols.push(cellValue);
+      
+      // Check if this looks like a header cell
+      const cellLower = cellValue.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      const headerKeywords = ['descricao', 'item', 'valor', 'qtd', 'un', 'unidade', 'id', 'total', 'preco', 'atividade', 'servico'];
+      if (headerKeywords.some(kw => cellLower.includes(kw))) {
+        recognizedCount++;
+      }
+    }
+    
+    // If we found a row with 2+ recognized headers, use it
+    if (recognizedCount >= 2 && rowCols.filter(c => c !== '').length >= 3) {
+      actualHeaderRow = row;
+      headerColumns = rowCols;
+      console.log('Found header row at:', row, 'with columns:', headerColumns);
+      break;
+    }
+  }
+
+  // If no header was found, try to extract data directly
+  if (headerColumns.length === 0 || headerColumns.filter(c => c && !c.startsWith('__')).length < 2) {
+    // Direct cell extraction fallback
+    console.log('Using direct cell extraction fallback');
+    return parseSheetDirectly(sheet, range, skipRows);
+  }
+
+  // Convert to JSON with headers from the detected row
   const jsonData = XLSX.utils.sheet_to_json<Record<string, any>>(sheet, {
-    range: skipRows,
+    range: actualHeaderRow,
     defval: null
   });
 
-  console.log('Parsing sheet:', sheetName, 'with skipRows:', skipRows);
+  console.log('Parsing sheet:', sheetName, 'with headerRow:', actualHeaderRow);
   console.log('Total rows in JSON:', jsonData.length);
-  console.log('Column mapping:', columnMapping);
   
   if (jsonData.length > 0) {
     console.log('First row keys:', Object.keys(jsonData[0]));
@@ -230,9 +269,13 @@ export function parseSheetData(
   const entries: MeasurementEntry[] = [];
   let outlierThreshold = 0;
   
+  // Build a dynamic column mapping based on actual columns found
+  const actualMapping = buildDynamicMapping(Object.keys(jsonData[0] || {}), columnMapping);
+  console.log('Dynamic mapping:', actualMapping);
+  
   // Try to find the best column for quantity/measurement
-  const measurementCol = columnMapping.measurement || columnMapping.requestedQty || columnMapping.verifiedQty;
-  const valueCol = columnMapping.value || columnMapping.verifiedValue || columnMapping.requestedValue;
+  const measurementCol = actualMapping.measurement || actualMapping.requestedQty || actualMapping.verifiedQty;
+  const valueCol = actualMapping.value || actualMapping.verifiedValue || actualMapping.requestedValue;
   
   // Calculate mean and std for outlier detection
   const values = jsonData
@@ -246,56 +289,82 @@ export function parseSheetData(
   }
 
   for (const row of jsonData) {
+    // Skip the __rowNum__ property
+    const keys = Object.keys(row).filter(k => k !== '__rowNum__');
+    if (keys.length === 0) continue;
+    
     // Get the first column value to use as item if no specific mapping
-    const firstColKey = Object.keys(row)[0];
+    const firstColKey = keys[0];
     const firstColValue = row[firstColKey];
     
     // Try multiple ways to get the description
-    const descricao = row[columnMapping.description || ''] || 
-                      row['Descrição'] || 
-                      row['DESCRIÇÃO'] ||
-                      row['Descrição do serviço'] ||
-                      row['Serviço'] ||
-                      row['Atividade'] ||
+    const descricao = findValueByPatterns(row, ['descri', 'atividade', 'servic']) || 
+                      row[actualMapping.description || ''] || 
                       '';
     
     // Try multiple ways to get the quantity
-    const measurement = parseFloat(row[measurementCol || '']) || 
-                        parseFloat(row['Qtde'] || row['QTDE'] || row['Quantidade'] || row['QTD']) || 
-                        0;
+    let measurement = 0;
+    if (measurementCol) {
+      measurement = parseFloat(row[measurementCol]) || 0;
+    }
+    if (measurement === 0) {
+      measurement = findNumericByPatterns(row, ['qtd', 'quantidade', 'medido', 'verificado']);
+    }
+    
+    // Try to get unit price and value
+    let valorUnitario = findNumericByPatterns(row, ['unit', 'pu', 'p.u', 'preco']) || 
+                        parseFloat(row[actualMapping.unitPrice || '']) || 0;
+    
+    let valorTotal = findNumericByPatterns(row, ['total', 'valor']) || 
+                     parseFloat(row[valueCol || '']) || 
+                     (measurement * valorUnitario);
+    
+    // If we still have no values but have numeric columns, take any available
+    if (measurement === 0 && valorTotal === 0) {
+      const numericValues = keys
+        .map(k => parseFloat(row[k]))
+        .filter(v => !isNaN(v) && v > 0);
+      
+      if (numericValues.length >= 1) {
+        measurement = numericValues[0];
+        if (numericValues.length >= 2) {
+          valorTotal = numericValues[numericValues.length - 1];
+        }
+      }
+    }
     
     // Skip completely empty rows or header-like rows
     const hasDescription = descricao && descricao.toString().trim() !== '';
-    const hasValue = measurement > 0 || (valueCol && parseFloat(row[valueCol]) > 0);
+    const hasValue = measurement > 0 || valorTotal > 0;
     const isLikelyHeader = typeof firstColValue === 'string' && 
-                           ['item', 'descrição', 'codigo', 'código'].some(h => 
+                           ['item', 'descrição', 'descricao', 'codigo', 'código', 'id'].some(h => 
                              firstColValue.toLowerCase().includes(h));
     
     if (!hasDescription && !hasValue) continue;
     if (isLikelyHeader) continue;
 
-    const valorUnitario = parseFloat(row[columnMapping.unitPrice || ''] || row['PU'] || row['P.U.'] || row['Preço Unit.']) || 0;
-    const valorTotal = parseFloat(row[valueCol || ''] || row['Valor'] || row['VALOR'] || row['Valor Total']) || measurement * valorUnitario;
+    const unidade = findValueByPatterns(row, ['un', 'unid']) || 
+                   row[actualMapping.unit || ''] || 'UN';
 
     const entry: MeasurementEntry = {
       id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      item: row[columnMapping.item || ''] || firstColValue || '',
-      date: formatDate(row[columnMapping.date || '']),
-      responsavel: row[columnMapping.entity || ''] || 'Não informado',
-      local: row[columnMapping.local || ''] || 'Não informado',
-      disciplina: row[columnMapping.discipline || ''] || 'Geral',
-      tipo: row[columnMapping.discipline || ''] || '',
+      item: row[actualMapping.item || ''] || String(firstColValue || ''),
+      date: formatDate(row[actualMapping.date || '']),
+      responsavel: row[actualMapping.entity || ''] || 'Não informado',
+      local: row[actualMapping.local || ''] || 'Não informado',
+      disciplina: row[actualMapping.discipline || ''] || sheetName || 'Geral',
+      tipo: row[actualMapping.discipline || ''] || '',
       descricao: descricao || 'Sem descrição',
       quantidade: measurement,
-      unidade: row[columnMapping.unit || ''] || row['UN'] || row['Unidade'] || 'UN',
+      unidade: unidade,
       valorUnitario,
       valorTotal,
-      qtdSolicitada: parseFloat(row[columnMapping.requestedQty || '']) || undefined,
-      valorSolicitado: parseFloat(row[columnMapping.requestedValue || '']) || undefined,
-      qtdVerificada: parseFloat(row[columnMapping.verifiedQty || '']) || undefined,
-      valorVerificado: parseFloat(row[columnMapping.verifiedValue || '']) || undefined,
-      classificacao: row[columnMapping.classification || ''] || undefined,
-      medicao: parseInt(row[columnMapping.measurementNumber || '']) || undefined,
+      qtdSolicitada: parseFloat(row[actualMapping.requestedQty || '']) || undefined,
+      valorSolicitado: parseFloat(row[actualMapping.requestedValue || '']) || undefined,
+      qtdVerificada: parseFloat(row[actualMapping.verifiedQty || '']) || undefined,
+      valorVerificado: parseFloat(row[actualMapping.verifiedValue || '']) || undefined,
+      classificacao: row[actualMapping.classification || ''] || undefined,
+      medicao: parseInt(row[actualMapping.measurementNumber || '']) || undefined,
       status: measurement > outlierThreshold && outlierThreshold > 0 ? 'outlier' : 'normal'
     };
 
@@ -303,6 +372,124 @@ export function parseSheetData(
   }
 
   console.log('Total entries parsed:', entries.length);
+  return entries;
+}
+
+// Helper function to find value by pattern matching
+function findValueByPatterns(row: Record<string, any>, patterns: string[]): string {
+  const keys = Object.keys(row).filter(k => k !== '__rowNum__');
+  for (const pattern of patterns) {
+    for (const key of keys) {
+      const keyLower = key.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      if (keyLower.includes(pattern)) {
+        const val = row[key];
+        if (val !== null && val !== undefined && String(val).trim() !== '') {
+          return String(val);
+        }
+      }
+    }
+  }
+  return '';
+}
+
+// Helper function to find numeric value by pattern matching
+function findNumericByPatterns(row: Record<string, any>, patterns: string[]): number {
+  const keys = Object.keys(row).filter(k => k !== '__rowNum__');
+  for (const pattern of patterns) {
+    for (const key of keys) {
+      const keyLower = key.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      if (keyLower.includes(pattern)) {
+        const val = parseFloat(row[key]);
+        if (!isNaN(val) && val > 0) {
+          return val;
+        }
+      }
+    }
+  }
+  return 0;
+}
+
+// Build dynamic column mapping based on actual column names
+function buildDynamicMapping(columns: string[], baseMapping: ColumnMapping): ColumnMapping {
+  const mapping = { ...baseMapping };
+  
+  for (const col of columns) {
+    if (col === '__rowNum__' || col.startsWith('__EMPTY')) continue;
+    
+    const colLower = col.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    
+    for (const [key, keywords] of Object.entries(COLUMN_KEYWORDS)) {
+      if (mapping[key as keyof ColumnMapping] === null) {
+        for (const keyword of keywords) {
+          const keywordNorm = keyword.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+          if (colLower.includes(keywordNorm)) {
+            mapping[key as keyof ColumnMapping] = col;
+            break;
+          }
+        }
+      }
+    }
+  }
+  
+  return mapping;
+}
+
+// Fallback: parse sheet directly cell by cell for sheets without clear headers
+function parseSheetDirectly(sheet: XLSX.WorkSheet, range: XLSX.Range, startRow: number): MeasurementEntry[] {
+  const entries: MeasurementEntry[] = [];
+  
+  console.log('Direct parsing from row:', startRow, 'to row:', range.e.r);
+  
+  for (let row = startRow; row <= range.e.r; row++) {
+    const rowData: any[] = [];
+    
+    for (let col = range.s.c; col <= range.e.c; col++) {
+      const cell = sheet[XLSX.utils.encode_cell({ r: row, c: col })];
+      rowData.push(cell ? cell.v : null);
+    }
+    
+    // Try to extract meaningful data from the row
+    const strings = rowData.filter(v => typeof v === 'string' && v.trim() !== '');
+    const numbers = rowData.filter(v => typeof v === 'number' && !isNaN(v));
+    
+    // Need at least one string (description) and one number (value/qty)
+    if (strings.length === 0 && numbers.length === 0) continue;
+    
+    // Skip rows that look like headers
+    const firstString = strings[0] || '';
+    if (['item', 'descrição', 'descricao', 'id', 'codigo'].some(h => 
+        firstString.toLowerCase().includes(h))) continue;
+    
+    // Extract what we can
+    const description = strings.find(s => s.length > 5) || strings[0] || 'Sem descrição';
+    const item = rowData[0] !== null ? String(rowData[0]) : '';
+    const quantity = numbers[0] || 0;
+    const unitPrice = numbers.length >= 2 ? numbers[numbers.length - 2] : 0;
+    const totalValue = numbers.length >= 1 ? numbers[numbers.length - 1] : 0;
+    
+    // Find unit (usually short strings like UN, M, M2, etc)
+    const unit = strings.find(s => s.length <= 4 && /^[A-Z0-9²³]+$/i.test(s.trim())) || 'UN';
+    
+    if (quantity > 0 || totalValue > 0) {
+      entries.push({
+        id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        item: item,
+        date: new Date().toISOString().split('T')[0],
+        responsavel: 'Não informado',
+        local: 'Não informado',
+        disciplina: 'Geral',
+        tipo: '',
+        descricao: description,
+        quantidade: quantity,
+        unidade: unit,
+        valorUnitario: unitPrice,
+        valorTotal: totalValue,
+        status: 'normal'
+      });
+    }
+  }
+  
+  console.log('Direct parsing found entries:', entries.length);
   return entries;
 }
 

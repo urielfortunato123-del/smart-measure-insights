@@ -68,8 +68,8 @@ export const AlertsPanel = ({ alerts, onAlertClick }: AlertsPanelProps) => {
   const mediumCount = alerts.filter(a => a.severity === 'medium').length;
 
   return (
-    <Card className="border-destructive/20">
-      <CardHeader className="pb-2">
+    <Card className="border-destructive/20 h-full flex flex-col">
+      <CardHeader className="pb-2 shrink-0">
         <div className="flex items-center justify-between">
           <CardTitle className="text-base font-semibold flex items-center gap-2">
             <AlertTriangle className="h-4 w-4 text-destructive" />
@@ -89,8 +89,8 @@ export const AlertsPanel = ({ alerts, onAlertClick }: AlertsPanelProps) => {
           </div>
         </div>
       </CardHeader>
-      <CardContent className="pt-0">
-        <ScrollArea className="h-[240px] pr-3">
+      <CardContent className="pt-0 flex-1 min-h-0">
+        <ScrollArea className="h-full max-h-[300px] pr-3">
           <div className="space-y-2">
             {alerts.slice(0, 10).map((alert) => {
               const Icon = getAlertIcon(alert.type);
@@ -117,23 +117,23 @@ export const AlertsPanel = ({ alerts, onAlertClick }: AlertsPanelProps) => {
                       )} />
                     </div>
                     
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-0.5">
-                        <span className="text-sm font-medium text-foreground truncate">
+                    <div className="flex-1 min-w-0 overflow-hidden">
+                      <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+                        <span className="text-sm font-medium text-foreground break-words">
                           {alert.title}
                         </span>
                         {getSeverityBadge(alert.severity)}
                       </div>
-                      <p className="text-xs text-muted-foreground line-clamp-2">
+                      <p className="text-xs text-muted-foreground break-words">
                         {alert.description}
                       </p>
                       {alert.value && alert.expectedValue && (
-                        <div className="flex items-center gap-2 mt-1.5 text-xs">
-                          <span className="text-destructive">
+                        <div className="flex items-center gap-2 mt-1.5 text-xs flex-wrap">
+                          <span className="text-destructive whitespace-nowrap">
                             Informado: {formatCurrency(alert.value)}
                           </span>
                           <span className="text-muted-foreground">→</span>
-                          <span className="text-success">
+                          <span className="text-success whitespace-nowrap">
                             Esperado: {formatCurrency(alert.expectedValue)}
                           </span>
                         </div>

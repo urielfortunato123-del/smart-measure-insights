@@ -190,8 +190,8 @@ Seja objetivo e técnico.`
         setAiAnalysis('');
       }
     }}>
-      <DialogContent className="max-w-2xl max-h-[85vh] overflow-hidden flex flex-col">
-        <DialogHeader>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader className="shrink-0">
           <DialogTitle className="flex items-center gap-3">
             <div className={cn('p-2 rounded-lg', styles.bg)}>
               <Icon className={cn('h-5 w-5', styles.text)} />
@@ -213,132 +213,130 @@ Seja objetivo e técnico.`
           </DialogTitle>
         </DialogHeader>
 
-        <ScrollArea className="flex-1 pr-4">
-          <div className="space-y-6">
-            {/* Alert Details */}
-            <div className={cn('p-4 rounded-lg border', styles.border, styles.bg)}>
-              <h4 className="text-sm font-semibold mb-2 flex items-center gap-2">
-                <FileText className="h-4 w-4" />
-                Descrição do Problema
-              </h4>
-              <p className="text-sm text-muted-foreground">
-                {alert.description}
-              </p>
-              
-              {/* Values comparison */}
-              {alert.value !== undefined && alert.expectedValue !== undefined && (
-                <div className="mt-4 grid grid-cols-2 gap-4">
-                  <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20">
-                    <div className="flex items-center gap-2 mb-1">
-                      <XCircle className="h-4 w-4 text-destructive" />
-                      <span className="text-xs font-medium text-destructive">Valor Informado</span>
-                    </div>
-                    <p className="text-lg font-bold text-destructive">
-                      {formatCurrency(alert.value)}
-                    </p>
+        <div className="space-y-6 pb-4">
+          {/* Alert Details */}
+          <div className={cn('p-4 rounded-lg border', styles.border, styles.bg)}>
+            <h4 className="text-sm font-semibold mb-2 flex items-center gap-2">
+              <FileText className="h-4 w-4" />
+              Descrição do Problema
+            </h4>
+            <p className="text-sm text-muted-foreground">
+              {alert.description}
+            </p>
+            
+            {/* Values comparison */}
+            {alert.value !== undefined && alert.expectedValue !== undefined && (
+              <div className="mt-4 grid grid-cols-2 gap-4">
+                <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20">
+                  <div className="flex items-center gap-2 mb-1">
+                    <XCircle className="h-4 w-4 text-destructive" />
+                    <span className="text-xs font-medium text-destructive">Valor Informado</span>
                   </div>
-                  <div className="p-3 rounded-lg bg-success/10 border border-success/20">
-                    <div className="flex items-center gap-2 mb-1">
-                      <CheckCircle className="h-4 w-4 text-success" />
-                      <span className="text-xs font-medium text-success">Valor Correto</span>
-                    </div>
-                    <p className="text-lg font-bold text-success">
-                      {formatCurrency(alert.expectedValue)}
-                    </p>
-                  </div>
+                  <p className="text-lg font-bold text-destructive">
+                    {formatCurrency(alert.value)}
+                  </p>
                 </div>
-              )}
-              
-              {alert.value !== undefined && alert.expectedValue !== undefined && (
-                <div className="mt-3 p-2 rounded bg-muted/50 text-center">
-                  <span className="text-xs text-muted-foreground">Diferença: </span>
-                  <span className="text-sm font-semibold text-destructive">
-                    {formatCurrency(Math.abs(alert.value - alert.expectedValue))}
-                  </span>
-                </div>
-              )}
-            </div>
-
-            {/* Related Item Details */}
-            {relatedItem && (
-              <div className="p-4 rounded-lg border border-border bg-card">
-                <h4 className="text-sm font-semibold mb-3">Dados do Item</h4>
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div>
-                    <span className="text-xs text-muted-foreground">Descrição</span>
-                    <p className="font-medium">{relatedItem.descricao}</p>
+                <div className="p-3 rounded-lg bg-success/10 border border-success/20">
+                  <div className="flex items-center gap-2 mb-1">
+                    <CheckCircle className="h-4 w-4 text-success" />
+                    <span className="text-xs font-medium text-success">Valor Correto</span>
                   </div>
-                  <div>
-                    <span className="text-xs text-muted-foreground">Disciplina</span>
-                    <p className="font-medium">{relatedItem.disciplina}</p>
-                  </div>
-                  <div>
-                    <span className="text-xs text-muted-foreground">Quantidade</span>
-                    <p className="font-medium">{relatedItem.quantidade} {relatedItem.unidade}</p>
-                  </div>
-                  <div>
-                    <span className="text-xs text-muted-foreground">Valor Unitário</span>
-                    <p className="font-medium">{formatCurrency(relatedItem.valorUnitario)}</p>
-                  </div>
-                  <div>
-                    <span className="text-xs text-muted-foreground">Valor Total</span>
-                    <p className="font-medium">{formatCurrency(relatedItem.valorTotal)}</p>
-                  </div>
-                  <div>
-                    <span className="text-xs text-muted-foreground">Local</span>
-                    <p className="font-medium">{relatedItem.local}</p>
-                  </div>
-                </div>
-                
-                {/* Show calculation check */}
-                <div className="mt-3 p-2 rounded bg-muted/30">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-muted-foreground">Verificação: {relatedItem.quantidade} × {formatCurrency(relatedItem.valorUnitario)}</span>
-                    <span className="flex items-center gap-1">
-                      <ArrowRight className="h-3 w-3" />
-                      <span className="font-medium">{formatCurrency(relatedItem.quantidade * relatedItem.valorUnitario)}</span>
-                    </span>
-                  </div>
+                  <p className="text-lg font-bold text-success">
+                    {formatCurrency(alert.expectedValue)}
+                  </p>
                 </div>
               </div>
             )}
-
-            <Separator />
-
-            {/* AI Analysis */}
-            <div className="p-4 rounded-lg border border-primary/20 bg-primary/5">
-              <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
-                <Sparkles className="h-4 w-4 text-primary" />
-                Análise e Recomendações da IA
-              </h4>
-              
-              {isAnalyzing ? (
-                <div className="flex items-center gap-3 py-4">
-                  <Loader2 className="h-5 w-5 animate-spin text-primary" />
-                  <span className="text-sm text-muted-foreground">Analisando dados...</span>
-                </div>
-              ) : (
-                <ScrollArea className="max-h-[200px]">
-                  <div className="text-sm text-foreground whitespace-pre-wrap leading-relaxed pr-4">
-                    {aiAnalysis || 'Clique em "Analisar Novamente" para obter recomendações da IA.'}
-                  </div>
-                </ScrollArea>
-              )}
-              
-              {!isAnalyzing && (
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="mt-4"
-                  onClick={analyzeWithAI}
-                >
-                  <Sparkles className="h-4 w-4 mr-2" />
-                  Analisar Novamente
-                </Button>
-              )}
-            </div>
+            
+            {alert.value !== undefined && alert.expectedValue !== undefined && (
+              <div className="mt-3 p-2 rounded bg-muted/50 text-center">
+                <span className="text-xs text-muted-foreground">Diferença: </span>
+                <span className="text-sm font-semibold text-destructive">
+                  {formatCurrency(Math.abs(alert.value - alert.expectedValue))}
+                </span>
+              </div>
+            )}
           </div>
-        </ScrollArea>
+
+          {/* Related Item Details */}
+          {relatedItem && (
+            <div className="p-4 rounded-lg border border-border bg-card">
+              <h4 className="text-sm font-semibold mb-3">Dados do Item</h4>
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <div>
+                  <span className="text-xs text-muted-foreground">Descrição</span>
+                  <p className="font-medium">{relatedItem.descricao}</p>
+                </div>
+                <div>
+                  <span className="text-xs text-muted-foreground">Disciplina</span>
+                  <p className="font-medium">{relatedItem.disciplina}</p>
+                </div>
+                <div>
+                  <span className="text-xs text-muted-foreground">Quantidade</span>
+                  <p className="font-medium">{relatedItem.quantidade} {relatedItem.unidade}</p>
+                </div>
+                <div>
+                  <span className="text-xs text-muted-foreground">Valor Unitário</span>
+                  <p className="font-medium">{formatCurrency(relatedItem.valorUnitario)}</p>
+                </div>
+                <div>
+                  <span className="text-xs text-muted-foreground">Valor Total</span>
+                  <p className="font-medium">{formatCurrency(relatedItem.valorTotal)}</p>
+                </div>
+                <div>
+                  <span className="text-xs text-muted-foreground">Local</span>
+                  <p className="font-medium">{relatedItem.local}</p>
+                </div>
+              </div>
+              
+              {/* Show calculation check */}
+              <div className="mt-3 p-2 rounded bg-muted/30">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-muted-foreground">Verificação: {relatedItem.quantidade} × {formatCurrency(relatedItem.valorUnitario)}</span>
+                  <span className="flex items-center gap-1">
+                    <ArrowRight className="h-3 w-3" />
+                    <span className="font-medium">{formatCurrency(relatedItem.quantidade * relatedItem.valorUnitario)}</span>
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <Separator />
+
+          {/* AI Analysis */}
+          <div className="p-4 rounded-lg border border-primary/20 bg-primary/5">
+            <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-primary" />
+              Análise e Recomendações da IA
+            </h4>
+            
+            {isAnalyzing ? (
+              <div className="flex items-center gap-3 py-4">
+                <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                <span className="text-sm text-muted-foreground">Analisando dados...</span>
+              </div>
+            ) : (
+              <ScrollArea className="max-h-[250px]">
+                <div className="text-sm text-foreground whitespace-pre-wrap leading-relaxed pr-4">
+                  {aiAnalysis || 'Clique em "Analisar Novamente" para obter recomendações da IA.'}
+                </div>
+              </ScrollArea>
+            )}
+            
+            {!isAnalyzing && (
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="mt-4"
+                onClick={analyzeWithAI}
+              >
+                <Sparkles className="h-4 w-4 mr-2" />
+                Analisar Novamente
+              </Button>
+            )}
+          </div>
+        </div>
       </DialogContent>
     </Dialog>
   );

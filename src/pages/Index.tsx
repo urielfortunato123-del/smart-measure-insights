@@ -7,10 +7,12 @@ import { SmartCompositionChart } from '@/components/dashboard/SmartCompositionCh
 import { SmartDataTable } from '@/components/dashboard/SmartDataTable';
 import { AlertsPanel } from '@/components/dashboard/AlertsPanel';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { getUniqueValues } from '@/data/sampleData';
+import { Button } from '@/components/ui/button';
+import { getUniqueValues, demoMeasurements } from '@/data/sampleData';
 import { MeasurementEntry, FilterState } from '@/types/measurement';
 import { calculateSmartStats, generateAlerts, formatCurrency, formatNumber } from '@/lib/analytics';
-import { Ruler, DollarSign, FileText, AlertTriangle } from 'lucide-react';
+import { Ruler, DollarSign, FileText, AlertTriangle, Play, Sparkles } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 const Index = () => {
   const [data, setData] = useState<MeasurementEntry[]>([]);
@@ -21,6 +23,7 @@ const Index = () => {
     disciplina: [],
     dateRange: null
   });
+  const { toast } = useToast();
 
   const responsaveis = useMemo(() => getUniqueValues(data, 'responsavel'), [data]);
   const locais = useMemo(() => getUniqueValues(data, 'local'), [data]);
@@ -39,7 +42,7 @@ const Index = () => {
   const alerts = useMemo(() => generateAlerts(filteredData), [filteredData]);
 
   const handleDataLoaded = useCallback((newData: MeasurementEntry[]) => {
-    if (newData.length > 0) setData(newData);
+    setData(newData);
     setLastUpdate(new Date());
   }, []);
 
@@ -49,6 +52,15 @@ const Index = () => {
   }, []);
 
   const handleRefresh = useCallback(() => setLastUpdate(new Date()), []);
+
+  const handleLoadDemo = useCallback(() => {
+    setData(demoMeasurements);
+    setLastUpdate(new Date());
+    toast({
+      title: 'Dados de demonstração carregados!',
+      description: `${demoMeasurements.length} itens carregados para visualização.`
+    });
+  }, [toast]);
 
   return (
     <div className="flex min-h-screen w-full bg-background">
@@ -68,55 +80,75 @@ const Index = () => {
         
         <ScrollArea className="flex-1">
           <div className="p-6 space-y-6">
-            {/* Smart KPI Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <SmartKPICard
-                title="Total Medido"
-                value={formatNumber(stats.totalMeasured)}
-                subtitle="unidades diversas"
-                aiInsight={stats.valueVsAvg !== 0 ? 
-                  `${stats.valueVsAvg > 0 ? '↑' : '↓'} ${Math.abs(stats.valueVsAvg).toFixed(1)}% ${stats.valueVsAvg > 0 ? 'acima' : 'abaixo'} da média histórica` : undefined}
-                icon={Ruler}
-                variant="default"
-              />
-              <SmartKPICard
-                title="Valor Total"
-                value={formatCurrency(stats.totalValue)}
-                subtitle="acumulado no período"
-                icon={DollarSign}
-                variant="primary"
-                trend={{ value: stats.valueVsAvg, isPositive: stats.valueVsAvg >= 0, label: 'vs média' }}
-              />
-              <SmartKPICard
-                title="Itens Lançados"
-                value={stats.itemCount}
-                subtitle={stats.reincidentItems > 0 ? `${stats.reincidentItems} reincidentes` : 'registros de medição'}
-                icon={FileText}
-                variant="default"
-              />
-              <SmartKPICard
-                title="Alertas"
-                value={alerts.length}
-                subtitle={stats.errorsCount > 0 ? `${stats.errorsCount} erros de cálculo` : 'outliers detectados'}
-                icon={AlertTriangle}
-                variant={alerts.length > 0 ? 'danger' : 'success'}
-                aiInsight={alerts.length > 0 ? 'IA detectou inconsistências' : 'Dados dentro do padrão'}
-              />
-            </div>
-
-            {/* Charts Row */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-              <SmartEvolutionChart data={filteredData} />
-              <SmartCompositionChart data={filteredData} />
-            </div>
-
-            {/* Alerts + Data Table */}
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-              <AlertsPanel alerts={alerts} />
-              <div className="lg:col-span-3">
-                <SmartDataTable data={filteredData} />
+            {/* Empty State - Show demo button */}
+            {data.length === 0 && (
+              <div className="flex flex-col items-center justify-center py-16 px-4 bg-card/30 rounded-xl border border-dashed border-border">
+                <Sparkles className="h-12 w-12 text-primary/50 mb-4" />
+                <h3 className="text-xl font-semibold mb-2">Bem-vindo ao Dashboard Inteligente</h3>
+                <p className="text-muted-foreground text-center max-w-md mb-6">
+                  Importe uma planilha de medição para começar a análise com IA, 
+                  ou carregue dados de demonstração para explorar o sistema.
+                </p>
+                <Button onClick={handleLoadDemo} size="lg" className="gap-2">
+                  <Play className="h-5 w-5" />
+                  Carregar Demonstração
+                </Button>
               </div>
-            </div>
+            )}
+
+            {/* Smart KPI Cards */}
+            {data.length > 0 && (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <SmartKPICard
+                    title="Total Medido"
+                    value={formatNumber(stats.totalMeasured)}
+                    subtitle="unidades diversas"
+                    aiInsight={stats.valueVsAvg !== 0 ? 
+                      `${stats.valueVsAvg > 0 ? '↑' : '↓'} ${Math.abs(stats.valueVsAvg).toFixed(1)}% ${stats.valueVsAvg > 0 ? 'acima' : 'abaixo'} da média histórica` : undefined}
+                    icon={Ruler}
+                    variant="default"
+                  />
+                  <SmartKPICard
+                    title="Valor Total"
+                    value={formatCurrency(stats.totalValue)}
+                    subtitle="acumulado no período"
+                    icon={DollarSign}
+                    variant="primary"
+                    trend={{ value: stats.valueVsAvg, isPositive: stats.valueVsAvg >= 0, label: 'vs média' }}
+                  />
+                  <SmartKPICard
+                    title="Itens Lançados"
+                    value={stats.itemCount}
+                    subtitle={stats.reincidentItems > 0 ? `${stats.reincidentItems} reincidentes` : 'registros de medição'}
+                    icon={FileText}
+                    variant="default"
+                  />
+                  <SmartKPICard
+                    title="Alertas"
+                    value={alerts.length}
+                    subtitle={stats.errorsCount > 0 ? `${stats.errorsCount} erros de cálculo` : 'outliers detectados'}
+                    icon={AlertTriangle}
+                    variant={alerts.length > 0 ? 'danger' : 'success'}
+                    aiInsight={alerts.length > 0 ? 'IA detectou inconsistências' : 'Dados dentro do padrão'}
+                  />
+                </div>
+
+                {/* Charts Row */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                  <SmartEvolutionChart data={filteredData} />
+                  <SmartCompositionChart data={filteredData} />
+                </div>
+
+                {/* Alerts + Data Table */}
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+                  <AlertsPanel alerts={alerts} />
+                  <div className="lg:col-span-3">
+                    <SmartDataTable data={filteredData} />
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         </ScrollArea>
       </main>

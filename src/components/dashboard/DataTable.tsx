@@ -2,9 +2,11 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Search, AlertTriangle, ChevronUp, ChevronDown } from 'lucide-react';
+import { Search, AlertTriangle, ChevronUp, ChevronDown, Download } from 'lucide-react';
 import { MeasurementEntry } from '@/types/measurement';
+import { exportToExcel } from '@/lib/excelParser';
 
 interface DataTableProps {
   data: MeasurementEntry[];
@@ -67,18 +69,28 @@ export const DataTable = ({ data }: DataTableProps) => {
       <ChevronDown className="h-4 w-4 inline ml-1" />;
   };
 
+  const handleExport = () => {
+    exportToExcel(sortedData, `medicao_${new Date().toISOString().split('T')[0]}.xlsx`);
+  };
+
   return (
     <Card className="col-span-3">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
         <CardTitle className="text-lg font-semibold">Navegador de Dados</CardTitle>
-        <div className="relative w-72">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Buscar medições..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 bg-secondary/50"
-          />
+        <div className="flex items-center gap-3">
+          <div className="relative w-72">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Buscar medições..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-9 bg-secondary/50"
+            />
+          </div>
+          <Button variant="outline" size="sm" onClick={handleExport}>
+            <Download className="h-4 w-4 mr-2" />
+            Exportar
+          </Button>
         </div>
       </CardHeader>
       <CardContent>

@@ -14,6 +14,7 @@ interface DashboardSidebarProps {
   responsaveis: string[];
   locais: string[];
   disciplinas: string[];
+  data: MeasurementEntry[];
 }
 
 export const DashboardSidebar = ({
@@ -23,7 +24,8 @@ export const DashboardSidebar = ({
   onFiltersChange,
   responsaveis,
   locais,
-  disciplinas
+  disciplinas,
+  data
 }: DashboardSidebarProps) => {
   return (
     <aside className="w-80 border-r border-border bg-sidebar shrink-0 flex flex-col h-screen">
@@ -63,7 +65,7 @@ export const DashboardSidebar = ({
           
           <Separator />
           
-          <AIAssistant dataContext="" />
+          <AIAssistant data={data} />
         </div>
       </ScrollArea>
     </aside>

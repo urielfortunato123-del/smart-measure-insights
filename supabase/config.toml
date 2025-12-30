@@ -1,1 +1,4 @@
 project_id = "sasmdprhssunrwxfkrtt"
+
+[functions.analyze-measurement]
+verify_jwt = false

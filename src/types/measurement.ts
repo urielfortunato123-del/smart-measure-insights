@@ -18,7 +18,11 @@ export interface MeasurementEntry {
   diferencaQtd?: number;
   classificacao?: 'OBRA' | 'QUALIDADE' | string;
   medicao?: number;
-  status: 'normal' | 'outlier' | 'pending' | 'aprovado';
+  status: 'normal' | 'outlier' | 'pending' | 'aprovado' | 'error';
+  calculatedValue?: number;
+  hasCalculationError?: boolean;
+  errorDifference?: number;
+  errorPercent?: number;
 }
 
 export interface FilterState {

@@ -162,6 +162,10 @@ export const FileUpload = ({ onDataLoaded }: FileUploadProps) => {
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
+
+    // Clear imported data in the dashboard as well
+    onDataLoaded([]);
+
     toast({
       title: 'Dados limpos',
       description: 'Você pode selecionar um novo arquivo'
@@ -333,8 +337,10 @@ export const FileUpload = ({ onDataLoaded }: FileUploadProps) => {
               </Collapsible>
             )}
 
+
+            {/* Actions */}
             <div className="flex gap-2">
-              <Button 
+              <Button
                 className="flex-1"
                 onClick={handleProcess}
                 disabled={isLoading || !selectedSheet}
@@ -348,7 +354,8 @@ export const FileUpload = ({ onDataLoaded }: FileUploadProps) => {
                   'Importar Dados'
                 )}
               </Button>
-              <Button 
+
+              <Button
                 variant="outline"
                 onClick={handleClear}
                 disabled={isLoading}
@@ -357,6 +364,18 @@ export const FileUpload = ({ onDataLoaded }: FileUploadProps) => {
               </Button>
             </div>
           </>
+        )}
+
+        {/* If a file is selected but the sheet parsing failed (or CSV without sheets), still allow clearing */}
+        {file && sheets.length === 0 && (
+          <div className="flex gap-2">
+            <Button className="flex-1" disabled>
+              Importar Dados
+            </Button>
+            <Button variant="outline" onClick={handleClear} disabled={isLoading}>
+              Limpar
+            </Button>
+          </div>
         )}
       </CardContent>
     </Card>

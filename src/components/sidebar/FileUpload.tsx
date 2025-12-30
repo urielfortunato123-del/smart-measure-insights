@@ -4,66 +4,154 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Upload, FileSpreadsheet, X } from 'lucide-react';
+import { Upload, FileSpreadsheet, X, Loader2, Settings2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { parseExcelFile, intelligentColumnMapping, parseSheetData } from '@/lib/excelParser';
+import { MeasurementEntry, ParsedSheet, ColumnMapping } from '@/types/measurement';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 interface FileUploadProps {
-  onDataLoaded: (data: any[]) => void;
+  onDataLoaded: (data: MeasurementEntry[]) => void;
 }
+
+type MeasurementPeriod = 'current' | 'previous' | 'weekly' | 'daily' | 'monthly';
 
 export const FileUpload = ({ onDataLoaded }: FileUploadProps) => {
   const [file, setFile] = useState<File | null>(null);
   const [skipRows, setSkipRows] = useState('0');
   const [selectedSheet, setSelectedSheet] = useState('');
+  const [sheets, setSheets] = useState<ParsedSheet[]>([]);
+  const [workbook, setWorkbook] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [columnMapping, setColumnMapping] = useState<ColumnMapping | null>(null);
+  const [measurementPeriod, setMeasurementPeriod] = useState<MeasurementPeriod>('current');
+  const [showMapping, setShowMapping] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
-    if (selectedFile) {
-      const validTypes = [
-        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        'application/vnd.ms-excel',
-        'text/csv'
-      ];
+    if (!selectedFile) return;
+
+    const validTypes = [
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'application/vnd.ms-excel',
+      'text/csv'
+    ];
+    
+    if (!validTypes.includes(selectedFile.type) && 
+        !selectedFile.name.endsWith('.csv') && 
+        !selectedFile.name.endsWith('.xlsx') &&
+        !selectedFile.name.endsWith('.xls')) {
+      toast({
+        title: 'Formato inválido',
+        description: 'Por favor, selecione um arquivo .xlsx ou .csv',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    setFile(selectedFile);
+
+    try {
+      const result = await parseExcelFile(selectedFile);
+      setSheets(result.sheets);
+      setWorkbook(result.workbook);
       
-      if (validTypes.includes(selectedFile.type) || selectedFile.name.endsWith('.csv') || selectedFile.name.endsWith('.xlsx')) {
-        setFile(selectedFile);
-        toast({
-          title: 'Arquivo selecionado',
-          description: `${selectedFile.name} pronto para processamento`
-        });
-      } else {
-        toast({
-          title: 'Formato inválido',
-          description: 'Por favor, selecione um arquivo .xlsx ou .csv',
-          variant: 'destructive'
-        });
+      if (result.sheets.length > 0) {
+        // Auto-select sheet that looks like measurement data
+        const measurementSheet = result.sheets.find(s => 
+          s.name.toLowerCase().includes('medição') || 
+          s.name.toLowerCase().includes('medicao') ||
+          s.name.toLowerCase().includes('boletim') ||
+          s.name.toLowerCase().includes('bm')
+        ) || result.sheets[0];
+        
+        setSelectedSheet(measurementSheet.name);
+        
+        // Auto-detect column mapping
+        const mapping = intelligentColumnMapping(measurementSheet.columns);
+        setColumnMapping(mapping);
       }
+
+      toast({
+        title: 'Arquivo carregado',
+        description: `${result.sheets.length} planilha(s) encontrada(s) em ${selectedFile.name}`
+      });
+    } catch (error) {
+      console.error('Error parsing file:', error);
+      toast({
+        title: 'Erro ao processar arquivo',
+        description: 'Verifique se o arquivo está no formato correto',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSheetChange = (sheetName: string) => {
+    setSelectedSheet(sheetName);
+    const sheet = sheets.find(s => s.name === sheetName);
+    if (sheet) {
+      const mapping = intelligentColumnMapping(sheet.columns);
+      setColumnMapping(mapping);
     }
   };
 
   const handleProcess = () => {
-    if (!file) return;
+    if (!file || !workbook || !selectedSheet || !columnMapping) return;
     
-    // In a real implementation, this would parse the Excel file
-    // For now, we'll simulate successful loading
-    toast({
-      title: 'Dados carregados',
-      description: `Processando ${file.name} com ${skipRows} linhas ignoradas`
-    });
+    setIsLoading(true);
     
-    // Trigger sample data load for demo
-    onDataLoaded([]);
+    try {
+      const entries = parseSheetData(
+        workbook,
+        selectedSheet,
+        parseInt(skipRows) || 0,
+        columnMapping
+      );
+
+      if (entries.length === 0) {
+        toast({
+          title: 'Nenhum dado encontrado',
+          description: 'Verifique o mapeamento de colunas e o número de linhas a pular',
+          variant: 'destructive'
+        });
+        return;
+      }
+
+      toast({
+        title: 'Dados importados com sucesso!',
+        description: `${entries.length} registros carregados da planilha "${selectedSheet}"`
+      });
+      
+      onDataLoaded(entries);
+    } catch (error) {
+      console.error('Error processing data:', error);
+      toast({
+        title: 'Erro ao processar dados',
+        description: 'Verifique o mapeamento de colunas',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleClear = () => {
     setFile(null);
     setSelectedSheet('');
+    setSheets([]);
+    setWorkbook(null);
+    setColumnMapping(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
   };
+
+  const currentSheet = sheets.find(s => s.name === selectedSheet);
 
   return (
     <Card className="border-border">
@@ -89,7 +177,11 @@ export const FileUpload = ({ onDataLoaded }: FileUploadProps) => {
               htmlFor="file-upload"
               className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-border rounded-lg cursor-pointer hover:border-primary/50 transition-colors"
             >
-              <Upload className="h-8 w-8 text-muted-foreground mb-2" />
+              {isLoading ? (
+                <Loader2 className="h-8 w-8 text-primary animate-spin mb-2" />
+              ) : (
+                <Upload className="h-8 w-8 text-muted-foreground mb-2" />
+              )}
               <span className="text-sm text-muted-foreground">
                 Clique para upload
               </span>
@@ -113,18 +205,39 @@ export const FileUpload = ({ onDataLoaded }: FileUploadProps) => {
           )}
         </div>
 
-        {file && (
+        {file && sheets.length > 0 && (
           <>
             <div className="space-y-2">
-              <Label className="text-xs">Planilha</Label>
-              <Select value={selectedSheet} onValueChange={setSelectedSheet}>
+              <Label className="text-xs">Planilha (Aba)</Label>
+              <Select value={selectedSheet} onValueChange={handleSheetChange}>
                 <SelectTrigger className="bg-secondary/50">
                   <SelectValue placeholder="Selecione a planilha" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="sheet1">BM Janeiro 2024</SelectItem>
-                  <SelectItem value="sheet2">BM Fevereiro 2024</SelectItem>
-                  <SelectItem value="sheet3">Resumo Geral</SelectItem>
+                  {sheets.map(sheet => (
+                    <SelectItem key={sheet.name} value={sheet.name}>
+                      {sheet.name} ({sheet.totalRows} linhas)
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-xs">Período de Medição</Label>
+              <Select 
+                value={measurementPeriod} 
+                onValueChange={(v) => setMeasurementPeriod(v as MeasurementPeriod)}
+              >
+                <SelectTrigger className="bg-secondary/50">
+                  <SelectValue placeholder="Selecione o período" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="current">Medição Atual</SelectItem>
+                  <SelectItem value="previous">Base Anterior</SelectItem>
+                  <SelectItem value="daily">Diária</SelectItem>
+                  <SelectItem value="weekly">Semanal</SelectItem>
+                  <SelectItem value="monthly">Mensal</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -134,18 +247,79 @@ export const FileUpload = ({ onDataLoaded }: FileUploadProps) => {
               <Input
                 type="number"
                 min="0"
-                max="20"
+                max="50"
                 value={skipRows}
                 onChange={(e) => setSkipRows(e.target.value)}
                 className="bg-secondary/50"
+                placeholder="Ex: 5 para pular logos e títulos"
               />
+              <p className="text-xs text-muted-foreground">
+                Pule linhas de logo, título do projeto, etc.
+              </p>
             </div>
+
+            {columnMapping && currentSheet && (
+              <Collapsible open={showMapping} onOpenChange={setShowMapping}>
+                <CollapsibleTrigger asChild>
+                  <Button variant="ghost" size="sm" className="w-full justify-between">
+                    <span className="flex items-center gap-2">
+                      <Settings2 className="h-4 w-4" />
+                      Mapeamento de Colunas
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {showMapping ? 'Ocultar' : 'Mostrar'}
+                    </span>
+                  </Button>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="space-y-2 mt-2">
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    {Object.entries(columnMapping).map(([key, value]) => (
+                      value && (
+                        <div key={key} className="flex flex-col">
+                          <span className="text-muted-foreground capitalize">
+                            {key.replace(/([A-Z])/g, ' $1').trim()}:
+                          </span>
+                          <span className="font-medium truncate" title={value}>
+                            {value}
+                          </span>
+                        </div>
+                      )
+                    ))}
+                  </div>
+                  {currentSheet.previewRows.length > 0 && (
+                    <div className="mt-2 p-2 bg-secondary/30 rounded text-xs">
+                      <p className="text-muted-foreground mb-1">Preview (1ª linha de dados):</p>
+                      <div className="overflow-x-auto">
+                        <div className="flex gap-2">
+                          {currentSheet.previewRows[0]?.slice(0, 4).map((cell, i) => (
+                            <span key={i} className="bg-background px-2 py-1 rounded truncate max-w-[80px]">
+                              {String(cell || '-')}
+                            </span>
+                          ))}
+                          {currentSheet.previewRows[0]?.length > 4 && (
+                            <span className="text-muted-foreground">...</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </CollapsibleContent>
+              </Collapsible>
+            )}
 
             <Button 
               className="w-full"
               onClick={handleProcess}
+              disabled={isLoading || !selectedSheet}
             >
-              Processar Arquivo
+              {isLoading ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Processando...
+                </>
+              ) : (
+                'Importar Dados'
+              )}
             </Button>
           </>
         )}

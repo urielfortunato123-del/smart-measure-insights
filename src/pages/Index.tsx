@@ -44,8 +44,10 @@ const Index = () => {
   // Calculate stats
   const stats = useMemo(() => calculateStats(filteredData), [filteredData]);
 
-  const handleDataLoaded = useCallback((newData: any[]) => {
-    // In real implementation, would merge or replace data
+  const handleDataLoaded = useCallback((newData: MeasurementEntry[]) => {
+    if (newData.length > 0) {
+      setData(newData);
+    }
     setLastUpdate(new Date());
   }, []);
 

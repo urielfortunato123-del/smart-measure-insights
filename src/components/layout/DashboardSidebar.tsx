@@ -7,7 +7,7 @@ import { Separator } from '@/components/ui/separator';
 import { MeasurementEntry, FilterState } from '@/types/measurement';
 
 interface DashboardSidebarProps {
-  onDataLoaded: (data: any[]) => void;
+  onDataLoaded: (data: MeasurementEntry[]) => void;
   onAddEntry: (entry: MeasurementEntry) => void;
   filters: FilterState;
   onFiltersChange: (filters: FilterState) => void;

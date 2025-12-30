@@ -7,6 +7,22 @@ interface CompositionChartProps {
 }
 
 export const CompositionChart = ({ data }: CompositionChartProps) => {
+  // Handle empty data gracefully
+  if (!data || data.length === 0) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg font-semibold">Composição por Atividade</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="h-[350px] flex items-center justify-center text-muted-foreground">
+            Importe uma planilha para visualizar a composição
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   // Group by discipline
   const chartData = data.reduce((acc, item) => {
     const existing = acc.find(d => d.name === item.disciplina);

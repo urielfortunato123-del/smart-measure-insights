@@ -1,4 +1,5 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { DashboardSidebar } from '@/components/layout/DashboardSidebar';
 import { DashboardHeader } from '@/components/layout/DashboardHeader';
 import { SmartKPICard } from '@/components/dashboard/SmartKPICard';
@@ -14,8 +15,11 @@ import { MeasurementEntry, FilterState } from '@/types/measurement';
 import { calculateSmartStats, generateAlerts, formatCurrency, formatNumber, Alert } from '@/lib/analytics';
 import { Ruler, DollarSign, FileText, AlertTriangle, Play, Sparkles } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 
 const Index = () => {
+  const { user, loading } = useAuth();
+  const navigate = useNavigate();
   const [data, setData] = useState<MeasurementEntry[]>([]);
   const [lastUpdate, setLastUpdate] = useState(new Date());
   const [filters, setFilters] = useState<FilterState>({
@@ -85,6 +89,30 @@ const Index = () => {
       item.id === selectedAlert.itemId
     );
   }, [selectedAlert, filteredData]);
+
+  // Redirect to auth if not logged in
+  useEffect(() => {
+    if (!loading && !user) {
+      navigate('/auth');
+    }
+  }, [user, loading, navigate]);
+
+  // Show loading while checking auth
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4" />
+          <p className="text-muted-foreground">Verificando autenticação...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render dashboard if not authenticated
+  if (!user) {
+    return null;
+  }
 
   return (
     <div className="flex min-h-screen w-full bg-background">

@@ -190,7 +190,7 @@ Seja objetivo e técnico.`
         setAiAnalysis('');
       }
     }}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[85vh] overflow-hidden flex flex-col">
         <DialogHeader className="shrink-0">
           <DialogTitle className="flex items-center gap-3">
             <div className={cn('p-2 rounded-lg', styles.bg)}>
@@ -213,7 +213,8 @@ Seja objetivo e técnico.`
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6 pb-4">
+        <ScrollArea className="flex-1 min-h-0 pr-4">
+          <div className="space-y-6 pb-4">
           {/* Alert Details */}
           <div className={cn('p-4 rounded-lg border', styles.border, styles.bg)}>
             <h4 className="text-sm font-semibold mb-2 flex items-center gap-2">
@@ -337,6 +338,7 @@ Seja objetivo e técnico.`
             )}
           </div>
         </div>
+        </ScrollArea>
       </DialogContent>
     </Dialog>
   );

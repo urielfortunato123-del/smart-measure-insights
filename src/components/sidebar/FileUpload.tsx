@@ -146,9 +146,17 @@ export const FileUpload = ({ onDataLoaded }: FileUploadProps) => {
     setSheets([]);
     setWorkbook(null);
     setColumnMapping(null);
+    setSkipRows('0');
+    setMeasurementPeriod('current');
+    setShowMapping(false);
+    setIsLoading(false);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
+    toast({
+      title: 'Dados limpos',
+      description: 'Você pode selecionar um novo arquivo'
+    });
   };
 
   const currentSheet = sheets.find(s => s.name === selectedSheet);
@@ -307,20 +315,29 @@ export const FileUpload = ({ onDataLoaded }: FileUploadProps) => {
               </Collapsible>
             )}
 
-            <Button 
-              className="w-full"
-              onClick={handleProcess}
-              disabled={isLoading || !selectedSheet}
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Processando...
-                </>
-              ) : (
-                'Importar Dados'
-              )}
-            </Button>
+            <div className="flex gap-2">
+              <Button 
+                className="flex-1"
+                onClick={handleProcess}
+                disabled={isLoading || !selectedSheet}
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Processando...
+                  </>
+                ) : (
+                  'Importar Dados'
+                )}
+              </Button>
+              <Button 
+                variant="outline"
+                onClick={handleClear}
+                disabled={isLoading}
+              >
+                Limpar
+              </Button>
+            </div>
           </>
         )}
       </CardContent>

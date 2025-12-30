@@ -1,17 +1,19 @@
 import { useState, useMemo, useCallback } from 'react';
 import { DashboardSidebar } from '@/components/layout/DashboardSidebar';
 import { DashboardHeader } from '@/components/layout/DashboardHeader';
-import { KPICard } from '@/components/dashboard/KPICard';
-import { EvolutionChart } from '@/components/dashboard/EvolutionChart';
-import { CompositionChart } from '@/components/dashboard/CompositionChart';
-import { DataTable } from '@/components/dashboard/DataTable';
+import { SmartKPICard } from '@/components/dashboard/SmartKPICard';
+import { SmartEvolutionChart } from '@/components/dashboard/SmartEvolutionChart';
+import { SmartCompositionChart } from '@/components/dashboard/SmartCompositionChart';
+import { SmartDataTable } from '@/components/dashboard/SmartDataTable';
+import { AlertsPanel } from '@/components/dashboard/AlertsPanel';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { sampleMeasurements, getUniqueValues, calculateStats } from '@/data/sampleData';
+import { getUniqueValues } from '@/data/sampleData';
 import { MeasurementEntry, FilterState } from '@/types/measurement';
+import { calculateSmartStats, generateAlerts, formatCurrency, formatNumber } from '@/lib/analytics';
 import { Ruler, DollarSign, FileText, AlertTriangle } from 'lucide-react';
 
 const Index = () => {
-  const [data, setData] = useState<MeasurementEntry[]>(sampleMeasurements);
+  const [data, setData] = useState<MeasurementEntry[]>([]);
   const [lastUpdate, setLastUpdate] = useState(new Date());
   const [filters, setFilters] = useState<FilterState>({
     responsavel: [],
@@ -20,34 +22,24 @@ const Index = () => {
     dateRange: null
   });
 
-  // Get unique values for filters
   const responsaveis = useMemo(() => getUniqueValues(data, 'responsavel'), [data]);
   const locais = useMemo(() => getUniqueValues(data, 'local'), [data]);
   const disciplinas = useMemo(() => getUniqueValues(data, 'disciplina'), [data]);
 
-  // Apply filters
   const filteredData = useMemo(() => {
     return data.filter(item => {
-      if (filters.responsavel.length > 0 && !filters.responsavel.includes(item.responsavel)) {
-        return false;
-      }
-      if (filters.local.length > 0 && !filters.local.includes(item.local)) {
-        return false;
-      }
-      if (filters.disciplina.length > 0 && !filters.disciplina.includes(item.disciplina)) {
-        return false;
-      }
+      if (filters.responsavel.length > 0 && !filters.responsavel.includes(item.responsavel)) return false;
+      if (filters.local.length > 0 && !filters.local.includes(item.local)) return false;
+      if (filters.disciplina.length > 0 && !filters.disciplina.includes(item.disciplina)) return false;
       return true;
     });
   }, [data, filters]);
 
-  // Calculate stats
-  const stats = useMemo(() => calculateStats(filteredData), [filteredData]);
+  const stats = useMemo(() => calculateSmartStats(filteredData), [filteredData]);
+  const alerts = useMemo(() => generateAlerts(filteredData), [filteredData]);
 
   const handleDataLoaded = useCallback((newData: MeasurementEntry[]) => {
-    if (newData.length > 0) {
-      setData(newData);
-    }
+    if (newData.length > 0) setData(newData);
     setLastUpdate(new Date());
   }, []);
 
@@ -56,23 +48,7 @@ const Index = () => {
     setLastUpdate(new Date());
   }, []);
 
-  const handleRefresh = useCallback(() => {
-    setLastUpdate(new Date());
-  }, []);
-
-  const formatCurrency = (value: number) => {
-    if (value >= 1000000) {
-      return `R$ ${(value / 1000000).toFixed(2)}M`;
-    }
-    if (value >= 1000) {
-      return `R$ ${(value / 1000).toFixed(0)}K`;
-    }
-    return `R$ ${value.toFixed(0)}`;
-  };
-
-  const formatNumber = (value: number) => {
-    return new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 0 }).format(value);
-  };
+  const handleRefresh = useCallback(() => setLastUpdate(new Date()), []);
 
   return (
     <div className="flex min-h-screen w-full bg-background">
@@ -88,54 +64,59 @@ const Index = () => {
       />
       
       <main className="flex-1 flex flex-col min-h-screen overflow-hidden">
-        <DashboardHeader 
-          lastUpdate={lastUpdate}
-          onRefresh={handleRefresh}
-        />
+        <DashboardHeader lastUpdate={lastUpdate} onRefresh={handleRefresh} />
         
         <ScrollArea className="flex-1">
           <div className="p-6 space-y-6">
-            {/* KPI Cards */}
+            {/* Smart KPI Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <KPICard
+              <SmartKPICard
                 title="Total Medido"
                 value={formatNumber(stats.totalMeasured)}
                 subtitle="unidades diversas"
+                aiInsight={stats.valueVsAvg !== 0 ? 
+                  `${stats.valueVsAvg > 0 ? '↑' : '↓'} ${Math.abs(stats.valueVsAvg).toFixed(1)}% ${stats.valueVsAvg > 0 ? 'acima' : 'abaixo'} da média histórica` : undefined}
                 icon={Ruler}
                 variant="default"
               />
-              <KPICard
+              <SmartKPICard
                 title="Valor Total"
                 value={formatCurrency(stats.totalValue)}
                 subtitle="acumulado no período"
                 icon={DollarSign}
                 variant="primary"
-                trend={{ value: 12.5, isPositive: true }}
+                trend={{ value: stats.valueVsAvg, isPositive: stats.valueVsAvg >= 0, label: 'vs média' }}
               />
-              <KPICard
+              <SmartKPICard
                 title="Itens Lançados"
                 value={stats.itemCount}
-                subtitle="registros de medição"
+                subtitle={stats.reincidentItems > 0 ? `${stats.reincidentItems} reincidentes` : 'registros de medição'}
                 icon={FileText}
                 variant="default"
               />
-              <KPICard
+              <SmartKPICard
                 title="Alertas"
-                value={stats.outlierCount}
-                subtitle="outliers detectados"
+                value={alerts.length}
+                subtitle={stats.errorsCount > 0 ? `${stats.errorsCount} erros de cálculo` : 'outliers detectados'}
                 icon={AlertTriangle}
-                variant={stats.outlierCount > 0 ? 'warning' : 'success'}
+                variant={alerts.length > 0 ? 'danger' : 'success'}
+                aiInsight={alerts.length > 0 ? 'IA detectou inconsistências' : 'Dados dentro do padrão'}
               />
             </div>
 
-            {/* Charts */}
+            {/* Charts Row */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-              <EvolutionChart data={filteredData} />
-              <CompositionChart data={filteredData} />
+              <SmartEvolutionChart data={filteredData} />
+              <SmartCompositionChart data={filteredData} />
             </div>
 
-            {/* Data Table */}
-            <DataTable data={filteredData} />
+            {/* Alerts + Data Table */}
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+              <AlertsPanel alerts={alerts} />
+              <div className="lg:col-span-3">
+                <SmartDataTable data={filteredData} />
+              </div>
+            </div>
           </div>
         </ScrollArea>
       </main>

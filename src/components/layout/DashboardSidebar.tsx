@@ -28,7 +28,7 @@ export const DashboardSidebar = ({
   data
 }: DashboardSidebarProps) => {
   return (
-    <aside className="w-80 border-r border-border bg-sidebar shrink-0 flex flex-col h-screen">
+    <aside className="w-80 min-w-[320px] border-r border-border bg-sidebar shrink-0 flex flex-col h-screen overflow-hidden">
       <div className="p-4 border-b border-border">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
@@ -41,8 +41,8 @@ export const DashboardSidebar = ({
         </div>
       </div>
       
-      <ScrollArea className="flex-1">
-        <div className="p-4 space-y-4">
+      <ScrollArea className="flex-1 overflow-x-hidden">
+        <div className="p-4 space-y-4 overflow-hidden">
           <FileUpload onDataLoaded={onDataLoaded} />
           
           <Separator />

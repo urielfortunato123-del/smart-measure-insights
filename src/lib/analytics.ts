@@ -57,6 +57,7 @@ export interface Alert {
   title: string;
   description: string;
   itemId?: string;
+  itemDescription?: string;
   value?: number;
   expectedValue?: number;
 }
@@ -155,6 +156,7 @@ export const generateAlerts = (data: MeasurementEntry[]): Alert[] => {
         title: `Erro de cálculo detectado`,
         description: `${item.descricao.substring(0, 50)}... apresenta diferença de ${percentDiff.toFixed(1)}% entre valor informado e calculado.`,
         itemId: item.id,
+        itemDescription: item.descricao,
         value: item.valorTotal,
         expectedValue: calculated
       });
@@ -168,6 +170,7 @@ export const generateAlerts = (data: MeasurementEntry[]): Alert[] => {
         title: `Valor atípico identificado`,
         description: `${item.descricao.substring(0, 50)}... está fora do padrão histórico.`,
         itemId: item.id,
+        itemDescription: item.descricao,
         value: item.valorTotal
       });
     }

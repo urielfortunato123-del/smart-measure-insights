@@ -318,9 +318,11 @@ Seja objetivo e técnico.`
                   <span className="text-sm text-muted-foreground">Analisando dados...</span>
                 </div>
               ) : (
-                <div className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">
-                  {aiAnalysis || 'Clique em "Analisar Novamente" para obter recomendações da IA.'}
-                </div>
+                <ScrollArea className="max-h-[200px]">
+                  <div className="text-sm text-foreground whitespace-pre-wrap leading-relaxed pr-4">
+                    {aiAnalysis || 'Clique em "Analisar Novamente" para obter recomendações da IA.'}
+                  </div>
+                </ScrollArea>
               )}
               
               {!isAnalyzing && (

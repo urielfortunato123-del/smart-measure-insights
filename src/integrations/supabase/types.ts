@@ -14,7 +14,273 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      alerts: {
+        Row: {
+          ai_explanation: string | null
+          alert_type: string
+          created_at: string
+          description: string | null
+          id: string
+          is_resolved: boolean | null
+          item_id: string | null
+          measurement_id: string | null
+          severity: string | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          ai_explanation?: string | null
+          alert_type: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_resolved?: boolean | null
+          item_id?: string | null
+          measurement_id?: string | null
+          severity?: string | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          ai_explanation?: string | null
+          alert_type?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_resolved?: boolean | null
+          item_id?: string | null
+          measurement_id?: string | null
+          severity?: string | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "alerts_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "measurement_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "alerts_measurement_id_fkey"
+            columns: ["measurement_id"]
+            isOneToOne: false
+            referencedRelation: "measurements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      item_history: {
+        Row: {
+          created_at: string
+          description: string
+          discipline: string | null
+          id: string
+          item_code: string
+          measured_at: string
+          measurement_id: string | null
+          quantity: number | null
+          total_value: number | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          discipline?: string | null
+          id?: string
+          item_code: string
+          measured_at?: string
+          measurement_id?: string | null
+          quantity?: number | null
+          total_value?: number | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          discipline?: string | null
+          id?: string
+          item_code?: string
+          measured_at?: string
+          measurement_id?: string | null
+          quantity?: number | null
+          total_value?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "item_history_measurement_id_fkey"
+            columns: ["measurement_id"]
+            isOneToOne: false
+            referencedRelation: "measurements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      measurement_items: {
+        Row: {
+          created_at: string
+          description: string
+          discipline: string | null
+          id: string
+          item_code: string | null
+          location: string | null
+          measurement_id: string
+          notes: string | null
+          quantity: number | null
+          requested_qty: number | null
+          requested_value: number | null
+          status: string | null
+          total_value: number | null
+          unit: string | null
+          unit_price: number | null
+          updated_at: string
+          user_id: string
+          verified_qty: number | null
+          verified_value: number | null
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          discipline?: string | null
+          id?: string
+          item_code?: string | null
+          location?: string | null
+          measurement_id: string
+          notes?: string | null
+          quantity?: number | null
+          requested_qty?: number | null
+          requested_value?: number | null
+          status?: string | null
+          total_value?: number | null
+          unit?: string | null
+          unit_price?: number | null
+          updated_at?: string
+          user_id: string
+          verified_qty?: number | null
+          verified_value?: number | null
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          discipline?: string | null
+          id?: string
+          item_code?: string | null
+          location?: string | null
+          measurement_id?: string
+          notes?: string | null
+          quantity?: number | null
+          requested_qty?: number | null
+          requested_value?: number | null
+          status?: string | null
+          total_value?: number | null
+          unit?: string | null
+          unit_price?: number | null
+          updated_at?: string
+          user_id?: string
+          verified_qty?: number | null
+          verified_value?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "measurement_items_measurement_id_fkey"
+            columns: ["measurement_id"]
+            isOneToOne: false
+            referencedRelation: "measurements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      measurements: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          period_end: string | null
+          period_start: string | null
+          period_type: string
+          project_id: string
+          status: string | null
+          total_items: number | null
+          total_value: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          period_end?: string | null
+          period_start?: string | null
+          period_type?: string
+          project_id: string
+          status?: string | null
+          total_items?: number | null
+          total_value?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          period_end?: string | null
+          period_start?: string | null
+          period_type?: string
+          project_id?: string
+          status?: string | null
+          total_items?: number | null
+          total_value?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "measurements_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      projects: {
+        Row: {
+          contract_value: number | null
+          created_at: string
+          description: string | null
+          end_date: string | null
+          id: string
+          name: string
+          start_date: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          contract_value?: number | null
+          created_at?: string
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          name: string
+          start_date?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          contract_value?: number | null
+          created_at?: string
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          name?: string
+          start_date?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

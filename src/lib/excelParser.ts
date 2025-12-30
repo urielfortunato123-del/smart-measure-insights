@@ -218,12 +218,25 @@ export function parseSheetData(
     defval: null
   });
 
+  console.log('Parsing sheet:', sheetName, 'with skipRows:', skipRows);
+  console.log('Total rows in JSON:', jsonData.length);
+  console.log('Column mapping:', columnMapping);
+  
+  if (jsonData.length > 0) {
+    console.log('First row keys:', Object.keys(jsonData[0]));
+    console.log('First row sample:', jsonData[0]);
+  }
+
   const entries: MeasurementEntry[] = [];
   let outlierThreshold = 0;
   
+  // Try to find the best column for quantity/measurement
+  const measurementCol = columnMapping.measurement || columnMapping.requestedQty || columnMapping.verifiedQty;
+  const valueCol = columnMapping.value || columnMapping.verifiedValue || columnMapping.requestedValue;
+  
   // Calculate mean and std for outlier detection
   const values = jsonData
-    .map(row => parseFloat(row[columnMapping.measurement || '']) || 0)
+    .map(row => parseFloat(row[measurementCol || '']) || 0)
     .filter(v => v > 0);
   
   if (values.length > 0) {
@@ -233,24 +246,48 @@ export function parseSheetData(
   }
 
   for (const row of jsonData) {
-    // Skip header rows (where measurement is null or 0)
-    const measurement = parseFloat(row[columnMapping.measurement || '']) || 0;
-    if (measurement === 0 && !row[columnMapping.description || '']) continue;
+    // Get the first column value to use as item if no specific mapping
+    const firstColKey = Object.keys(row)[0];
+    const firstColValue = row[firstColKey];
+    
+    // Try multiple ways to get the description
+    const descricao = row[columnMapping.description || ''] || 
+                      row['Descrição'] || 
+                      row['DESCRIÇÃO'] ||
+                      row['Descrição do serviço'] ||
+                      row['Serviço'] ||
+                      row['Atividade'] ||
+                      '';
+    
+    // Try multiple ways to get the quantity
+    const measurement = parseFloat(row[measurementCol || '']) || 
+                        parseFloat(row['Qtde'] || row['QTDE'] || row['Quantidade'] || row['QTD']) || 
+                        0;
+    
+    // Skip completely empty rows or header-like rows
+    const hasDescription = descricao && descricao.toString().trim() !== '';
+    const hasValue = measurement > 0 || (valueCol && parseFloat(row[valueCol]) > 0);
+    const isLikelyHeader = typeof firstColValue === 'string' && 
+                           ['item', 'descrição', 'codigo', 'código'].some(h => 
+                             firstColValue.toLowerCase().includes(h));
+    
+    if (!hasDescription && !hasValue) continue;
+    if (isLikelyHeader) continue;
 
-    const valorUnitario = parseFloat(row[columnMapping.unitPrice || '']) || 0;
-    const valorTotal = parseFloat(row[columnMapping.value || '']) || measurement * valorUnitario;
+    const valorUnitario = parseFloat(row[columnMapping.unitPrice || ''] || row['PU'] || row['P.U.'] || row['Preço Unit.']) || 0;
+    const valorTotal = parseFloat(row[valueCol || ''] || row['Valor'] || row['VALOR'] || row['Valor Total']) || measurement * valorUnitario;
 
     const entry: MeasurementEntry = {
       id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      item: row[columnMapping.item || ''] || '',
+      item: row[columnMapping.item || ''] || firstColValue || '',
       date: formatDate(row[columnMapping.date || '']),
       responsavel: row[columnMapping.entity || ''] || 'Não informado',
       local: row[columnMapping.local || ''] || 'Não informado',
       disciplina: row[columnMapping.discipline || ''] || 'Geral',
       tipo: row[columnMapping.discipline || ''] || '',
-      descricao: row[columnMapping.description || ''] || 'Sem descrição',
+      descricao: descricao || 'Sem descrição',
       quantidade: measurement,
-      unidade: row[columnMapping.unit || ''] || 'UN',
+      unidade: row[columnMapping.unit || ''] || row['UN'] || row['Unidade'] || 'UN',
       valorUnitario,
       valorTotal,
       qtdSolicitada: parseFloat(row[columnMapping.requestedQty || '']) || undefined,
@@ -265,6 +302,7 @@ export function parseSheetData(
     entries.push(entry);
   }
 
+  console.log('Total entries parsed:', entries.length);
   return entries;
 }
 

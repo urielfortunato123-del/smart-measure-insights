@@ -3,23 +3,110 @@ import { MeasurementEntry, ColumnMapping, ParsedSheet } from '@/types/measuremen
 
 // Keywords for intelligent column mapping (Portuguese/English)
 const COLUMN_KEYWORDS: Record<keyof ColumnMapping, string[]> = {
-  item: ['item', 'id', 'codigo', 'código', 'num', 'nº'],
+  item: ['item', 'id', 'codigo', 'código', 'num', 'nº', 'linha'],
   date: ['data', 'date', 'periodo', 'período', 'mes', 'mês'],
-  measurement: ['medicao', 'medição', 'quantidade', 'qty', 'qtd', 'qtde', 'amount', 'medido'],
+  measurement: ['qtde', 'qtd', 'quantidade', 'qty', 'amount', 'medido'],
   value: ['valor', 'preço', 'custo', 'total', 'price', 'value', 'valor_total'],
-  entity: ['responsavel', 'responsável', 'quem', 'executado', 'executor'],
-  discipline: ['disciplina', 'tipo', 'grupo', 'atividade', 'serviço', 'servico'],
-  description: ['descricao', 'descrição', 'atividade', 'serviço', 'servico', 'descrição_serviço'],
+  entity: ['responsavel', 'responsável', 'quem', 'executado', 'executor', 'contratada'],
+  discipline: ['disciplina', 'tipo', 'grupo', 'atividade'],
+  description: ['descricao', 'descrição', 'atividade', 'serviço', 'servico', 'descrição_serviço', 'descrição serviço'],
   local: ['local', 'trecho', 'estaca', 'km', 'localizacao', 'localização'],
   unit: ['unidade', 'un', 'unid', 'un.'],
-  unitPrice: ['pu', 'preco_unitario', 'preço_unitário', 'valor_unitario', 'r$_unit'],
+  unitPrice: ['pu', 'p.u', 'p.u.', 'preco_unitario', 'preço_unitário', 'valor_unitario', 'valor unitario'],
   requestedQty: ['qtd_solicitada', 'quantidade_solicitada', 'solicitado'],
-  requestedValue: ['valor_solicitado', 'valor_contratado', 'contratado'],
-  verifiedQty: ['qtd_verificada', 'verificado', 'qtd_verificada2'],
-  verifiedValue: ['valor_verificado', 'verificado_r$'],
-  classification: ['classificacao', 'classificação', 'class', 'obra', 'qualidade'],
-  measurementNumber: ['med', 'medicao_n', 'medição_nº', 'numero_medicao']
+  requestedValue: ['valor_solicitado', 'valor_contratado', 'contratado', 'valores contratuais'],
+  verifiedQty: ['qtd_verificada', 'verificado', 'acumulado'],
+  verifiedValue: ['valor_verificado', 'verificado_r$', 'executado'],
+  classification: ['classificacao', 'classificação', 'class', 'obra', 'qualidade', 'saldo'],
+  measurementNumber: ['med', 'medicao_n', 'medição_nº', 'numero_medicao', 'medição']
 };
+
+// Patterns to detect spreadsheet type
+const SPREADSHEET_PATTERNS = {
+  boletimMedicao: {
+    keywords: ['boletim de medição', 'boletim de medicao', 'período de medição', 'contratada:', 'pep:', 'itens contratuais'],
+    suggestedSkipRows: 11,
+    name: 'Boletim de Medição Financeira'
+  },
+  memoriaCalculo: {
+    keywords: ['memoria de cálculo', 'memória de calculo', 'descrição da atividade', 'valor verificado'],
+    suggestedSkipRows: 3,
+    name: 'Memória de Cálculo'
+  },
+  analise: {
+    keywords: ['análise medição', 'analise medicao', 'controle de medição'],
+    suggestedSkipRows: 5,
+    name: 'Análise de Medição'
+  }
+};
+
+export interface SheetTypeDetection {
+  type: string;
+  name: string;
+  suggestedSkipRows: number;
+  confidence: number;
+}
+
+function detectSpreadsheetType(sheet: XLSX.WorkSheet): SheetTypeDetection {
+  // Get first 15 rows as text for analysis
+  const range = XLSX.utils.decode_range(sheet['!ref'] || 'A1');
+  const textContent: string[] = [];
+  
+  for (let row = range.s.r; row <= Math.min(range.s.r + 15, range.e.r); row++) {
+    for (let col = range.s.c; col <= Math.min(range.s.c + 10, range.e.c); col++) {
+      const cell = sheet[XLSX.utils.encode_cell({ r: row, c: col })];
+      if (cell && cell.v) {
+        textContent.push(String(cell.v).toLowerCase());
+      }
+    }
+  }
+  
+  const fullText = textContent.join(' ');
+  
+  for (const [type, pattern] of Object.entries(SPREADSHEET_PATTERNS)) {
+    const matches = pattern.keywords.filter(kw => fullText.includes(kw.toLowerCase()));
+    if (matches.length > 0) {
+      return {
+        type,
+        name: pattern.name,
+        suggestedSkipRows: pattern.suggestedSkipRows,
+        confidence: matches.length / pattern.keywords.length
+      };
+    }
+  }
+  
+  // Default: try to find header row
+  const headerRow = findHeaderRow(sheet);
+  return {
+    type: 'unknown',
+    name: 'Planilha Genérica',
+    suggestedSkipRows: headerRow,
+    confidence: 0.5
+  };
+}
+
+function findHeaderRow(sheet: XLSX.WorkSheet): number {
+  const range = XLSX.utils.decode_range(sheet['!ref'] || 'A1');
+  const headerKeywords = ['descrição', 'descricao', 'item', 'qtde', 'valor', 'un', 'unidade', 'id'];
+  
+  for (let row = range.s.r; row <= Math.min(range.s.r + 15, range.e.r); row++) {
+    let matchCount = 0;
+    for (let col = range.s.c; col <= Math.min(range.s.c + 15, range.e.c); col++) {
+      const cell = sheet[XLSX.utils.encode_cell({ r: row, c: col })];
+      if (cell && cell.v) {
+        const cellText = String(cell.v).toLowerCase();
+        if (headerKeywords.some(kw => cellText.includes(kw))) {
+          matchCount++;
+        }
+      }
+    }
+    if (matchCount >= 2) {
+      return row;
+    }
+  }
+  
+  return 0;
+}
 
 export function parseExcelFile(file: File): Promise<{ sheets: ParsedSheet[], workbook: XLSX.WorkBook }> {
   return new Promise((resolve, reject) => {
@@ -34,16 +121,20 @@ export function parseExcelFile(file: File): Promise<{ sheets: ParsedSheet[], wor
           const sheet = workbook.Sheets[name];
           const range = XLSX.utils.decode_range(sheet['!ref'] || 'A1');
           
-          // Get columns from first row
+          // Detect spreadsheet type
+          const typeDetection = detectSpreadsheetType(sheet);
+          
+          // Get columns from header row (after skip)
+          const headerRow = typeDetection.suggestedSkipRows;
           const columns: string[] = [];
           for (let col = range.s.c; col <= range.e.c; col++) {
-            const cell = sheet[XLSX.utils.encode_cell({ r: range.s.r, c: col })];
-            columns.push(cell ? String(cell.v || '') : `Col_${col + 1}`);
+            const cell = sheet[XLSX.utils.encode_cell({ r: headerRow, c: col })];
+            columns.push(cell ? String(cell.v || '').trim() : `Col_${col + 1}`);
           }
           
-          // Get preview rows (first 5 data rows)
+          // Get preview rows (5 data rows after header)
           const previewRows: any[][] = [];
-          for (let row = range.s.r + 1; row <= Math.min(range.s.r + 5, range.e.r); row++) {
+          for (let row = headerRow + 1; row <= Math.min(headerRow + 5, range.e.r); row++) {
             const rowData: any[] = [];
             for (let col = range.s.c; col <= range.e.c; col++) {
               const cell = sheet[XLSX.utils.encode_cell({ r: row, c: col })];
@@ -54,9 +145,11 @@ export function parseExcelFile(file: File): Promise<{ sheets: ParsedSheet[], wor
           
           return {
             name,
-            columns,
+            columns: columns.filter(c => c && c !== ''),
             previewRows,
-            totalRows: range.e.r - range.s.r
+            totalRows: range.e.r - range.s.r,
+            detectedType: typeDetection.name,
+            suggestedSkipRows: typeDetection.suggestedSkipRows
           };
         });
         

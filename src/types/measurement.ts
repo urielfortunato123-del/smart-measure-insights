@@ -66,4 +66,6 @@ export interface ParsedSheet {
   columns: string[];
   previewRows: any[][];
   totalRows: number;
+  detectedType?: string;
+  suggestedSkipRows?: number;
 }

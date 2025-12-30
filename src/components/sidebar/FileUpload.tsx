@@ -229,8 +229,8 @@ export const FileUpload = ({ onDataLoaded }: FileUploadProps) => {
         {file && sheets.length > 0 && (
           <>
             {currentSheet?.detectedType && (
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <p className="text-xs text-primary font-medium">
+              <div className="p-2 bg-primary/10 rounded-lg overflow-hidden">
+                <p className="text-xs text-primary font-medium truncate">
                   Tipo detectado: {currentSheet.detectedType}
                 </p>
               </div>
@@ -239,14 +239,15 @@ export const FileUpload = ({ onDataLoaded }: FileUploadProps) => {
             <div className="space-y-2">
               <Label className="text-xs">Planilha (Aba)</Label>
               <Select value={selectedSheet} onValueChange={handleSheetChange}>
-                <SelectTrigger className="bg-secondary/50">
-                  <SelectValue placeholder="Selecione a planilha" />
+                <SelectTrigger className="bg-secondary/50 w-full">
+                  <SelectValue placeholder="Selecione a planilha" className="truncate" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="max-w-[280px]">
                   {sheets.map(sheet => (
-                    <SelectItem key={sheet.name} value={sheet.name}>
-                      {sheet.name} ({sheet.totalRows} linhas)
-                      {sheet.detectedType && ` • ${sheet.detectedType}`}
+                    <SelectItem key={sheet.name} value={sheet.name} className="truncate">
+                      <span className="truncate block max-w-[240px]">
+                        {sheet.name} ({sheet.totalRows})
+                      </span>
                     </SelectItem>
                   ))}
                 </SelectContent>

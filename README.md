@@ -1,73 +1,139 @@
-# Welcome to your Lovable project
+# Engenharia Inteligente de Medições
 
-## Project info
+Sistema visual de medição inteligente onde a planilha é apenas a entrada e a **Inteligência Artificial** executa automaticamente a análise, comparação histórica, detecção de outliers e geração de alertas executivos.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+![Status](https://img.shields.io/badge/status-MVP%20Funcional-green)
+![Frontend](https://img.shields.io/badge/frontend-React%20%2B%20TypeScript-blue)
+![Backend](https://img.shields.io/badge/backend-Supabase%20%2B%20Edge%20Functions-orange)
 
-## How can I edit this code?
+## 🎯 Conceito
 
-There are several ways of editing your application.
+- **A IA faz o trabalho pesado** — análise automática, detecção de anomalias
+- **O usuário apenas enxerga e decide** — interface visual executiva
+- **Comparação automática** entre medições históricas
+- **Histórico vivo** por item e disciplina
+- **Visual executivo** com semáforo de risco e KPIs inteligentes
 
-**Use Lovable**
+## 🧠 Funcionalidades
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+### Dashboard Inteligente
+- KPIs em tempo real (Total Medido, Valor, Itens, Alertas)
+- Gráficos de evolução temporal
+- Composição por disciplina
+- Tabela de dados com status visual
 
-Changes made via Lovable will be committed automatically to this repo.
+### Análise com IA
+- Detecção automática de outliers estatísticos
+- Identificação de erros de cálculo
+- Alertas com explicação detalhada
+- Recomendações de ação baseadas em IA
 
-**Use your preferred IDE**
+### Gestão de Dados
+- Importação de planilhas Excel
+- Filtros por responsável, local e disciplina
+- Entrada rápida de medições
+- Exportação de relatórios
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### Autenticação
+- Login com email/senha
+- Login com Google OAuth
+- Recuperação de senha
+- Sessões seguras
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+## 🏗️ Arquitetura
 
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+```
+┌─────────────────────────────────────────────────────────┐
+│                    FRONTEND (React)                      │
+│  ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐    │
+│  │Dashboard│  │ Charts  │  │ Alerts  │  │  Auth   │    │
+│  └────┬────┘  └────┬────┘  └────┬────┘  └────┬────┘    │
+└───────┼────────────┼────────────┼────────────┼──────────┘
+        │            │            │            │
+        ▼            ▼            ▼            ▼
+┌─────────────────────────────────────────────────────────┐
+│                 SUPABASE (Backend)                       │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐     │
+│  │  Database   │  │Edge Functions│  │    Auth     │     │
+│  │ (Postgres)  │  │  (Deno/TS)  │  │   (OAuth)   │     │
+│  └─────────────┘  └──────┬──────┘  └─────────────┘     │
+└──────────────────────────┼──────────────────────────────┘
+                           │
+                           ▼
+┌─────────────────────────────────────────────────────────┐
+│              LOVABLE AI GATEWAY                          │
+│         (Gemini 2.5 Flash / GPT-5)                      │
+└─────────────────────────────────────────────────────────┘
 ```
 
-**Edit a file directly in GitHub**
+## 🛠️ Tecnologias
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+| Camada | Tecnologia |
+|--------|------------|
+| Frontend | React 18, TypeScript, Vite |
+| Estilização | Tailwind CSS, shadcn/ui |
+| Estado | TanStack Query, React Context |
+| Backend | Supabase (Postgres + Edge Functions) |
+| IA | Lovable AI Gateway (Gemini/GPT) |
+| Auth | Supabase Auth (Email + Google OAuth) |
+| Gráficos | Recharts |
 
-**Use GitHub Codespaces**
+## 📁 Estrutura do Projeto
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+```
+├── src/
+│   ├── components/
+│   │   ├── dashboard/     # Componentes do dashboard
+│   │   ├── layout/        # Header, Sidebar
+│   │   ├── sidebar/       # Painéis laterais
+│   │   └── ui/            # Componentes base (shadcn)
+│   ├── hooks/             # Custom hooks (auth, toast)
+│   ├── lib/               # Utilitários e analytics
+│   ├── pages/             # Páginas (Index, Auth)
+│   ├── types/             # Tipos TypeScript
+│   └── integrations/      # Configuração Supabase
+├── supabase/
+│   └── functions/         # Edge Functions
+├── docs/                  # Documentação
+├── backend/               # Backend próprio (futuro)
+├── data/                  # Schemas e exemplos
+└── public/                # Assets estáticos
+```
 
-## What technologies are used for this project?
+## 🚀 Como Executar
 
-This project is built with:
+```bash
+# Instalar dependências
+npm install
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+# Rodar em desenvolvimento
+npm run dev
 
-## How can I deploy this project?
+# Build para produção
+npm run build
+```
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+## 📊 Status do Projeto
 
-## Can I connect a custom domain to my Lovable project?
+- ✅ MVP funcional (frontend completo)
+- ✅ Dashboard com KPIs e gráficos
+- ✅ Análise de IA com Edge Functions
+- ✅ Sistema de alertas inteligentes
+- ✅ Autenticação (email + Google)
+- ⏳ Persistência histórica no banco
+- ⏳ Relatórios exportáveis em PDF
+- ⏳ Comparação entre períodos
 
-Yes, you can!
+## 📚 Documentação
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+- [Visão Geral](docs/visao-geral.md)
+- [Arquitetura Técnica](docs/arquitetura.md)
+- [Fluxo de Inteligência](docs/fluxo-inteligencia.md)
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+## 📄 Licença
+
+Desenvolvido por **Uriel da Fonseca Fortunato**
+
+---
+
+> *"A planilha é só a entrada. A inteligência está no sistema."*

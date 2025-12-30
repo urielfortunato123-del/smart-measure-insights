@@ -51,6 +51,7 @@ export const DashboardSidebar = ({
             onAddEntry={onAddEntry}
             disciplines={disciplinas}
             locations={locais}
+            importedData={data}
           />
           
           <Separator />

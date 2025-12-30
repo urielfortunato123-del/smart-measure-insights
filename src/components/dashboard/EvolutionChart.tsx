@@ -7,6 +7,22 @@ interface EvolutionChartProps {
 }
 
 export const EvolutionChart = ({ data }: EvolutionChartProps) => {
+  // Handle empty data gracefully
+  if (!data || data.length === 0) {
+    return (
+      <Card className="col-span-2">
+        <CardHeader>
+          <CardTitle className="text-lg font-semibold">Evolução por Disciplina</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="h-[350px] flex items-center justify-center text-muted-foreground">
+            Importe uma planilha para visualizar a evolução
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   // Group by discipline and date
   const chartData = data.reduce((acc, item) => {
     const date = item.date;

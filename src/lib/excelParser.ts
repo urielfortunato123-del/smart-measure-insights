@@ -509,6 +509,28 @@ function formatDate(value: any): string {
   return String(value);
 }
 
+// Simple function to parse measurement data from workbook
+export function parseExcelData(workbook: XLSX.WorkBook): MeasurementEntry[] {
+  const sheetName = workbook.SheetNames[0];
+  if (!sheetName) return [];
+  
+  const sheet = workbook.Sheets[sheetName];
+  const typeDetection = detectSpreadsheetType(sheet);
+  
+  const range = XLSX.utils.decode_range(sheet['!ref'] || 'A1');
+  const headerRow = typeDetection.suggestedSkipRows;
+  
+  // Get columns from header row
+  const columns: string[] = [];
+  for (let col = range.s.c; col <= range.e.c; col++) {
+    const cell = sheet[XLSX.utils.encode_cell({ r: headerRow, c: col })];
+    columns.push(cell ? String(cell.v || '').trim() : `Col_${col + 1}`);
+  }
+  
+  const mapping = intelligentColumnMapping(columns);
+  return parseSheetData(workbook, sheetName, headerRow, mapping);
+}
+
 export function exportToExcel(data: MeasurementEntry[], filename: string = 'medicao_export.xlsx') {
   const exportData = data.map(entry => ({
     'Item': entry.item || '',

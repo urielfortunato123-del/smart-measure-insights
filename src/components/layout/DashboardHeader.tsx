@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Download, RefreshCw, Calendar, Image, Loader2, LogOut, User } from 'lucide-react';
+import { Download, RefreshCw, Calendar, Image, Loader2, LogOut, User, GitCompareArrows } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { toPng } from 'html-to-image';
@@ -99,6 +99,10 @@ export const DashboardHeader = ({ lastUpdate, onRefresh }: DashboardHeaderProps)
       </div>
       
       <div className="flex items-center gap-2">
+        <Button variant="outline" size="sm" onClick={() => navigate('/comparar')}>
+          <GitCompareArrows className="h-4 w-4 mr-2" />
+          Comparar
+        </Button>
         <Button variant="outline" size="sm" onClick={onRefresh}>
           <RefreshCw className="h-4 w-4 mr-2" />
           Atualizar

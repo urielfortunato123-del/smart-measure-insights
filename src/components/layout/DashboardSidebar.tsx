@@ -1,10 +1,13 @@
+import { useState } from 'react';
 import { FileUpload } from '@/components/sidebar/FileUpload';
+import { TPUUpload } from '@/components/sidebar/TPUUpload';
 import { QuickEntryForm } from '@/components/sidebar/QuickEntryForm';
 import { FilterPanel } from '@/components/sidebar/FilterPanel';
 import { AIAssistant } from '@/components/sidebar/AIAssistant';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { MeasurementEntry, FilterState } from '@/types/measurement';
+import { TPUEntry } from '@/types/tpu';
 
 interface DashboardSidebarProps {
   onDataLoaded: (data: MeasurementEntry[]) => void;
@@ -27,6 +30,13 @@ export const DashboardSidebar = ({
   disciplinas,
   data
 }: DashboardSidebarProps) => {
+  const [tpuData, setTPUData] = useState<TPUEntry[]>([]);
+
+  const handleTPULoaded = (entries: TPUEntry[]) => {
+    setTPUData(entries);
+    console.log('TPU loaded:', entries.length, 'items');
+  };
+
   return (
     <aside className="w-80 min-w-[320px] border-r border-border bg-sidebar shrink-0 flex flex-col h-screen overflow-hidden">
       <div className="p-4 border-b border-border bg-sidebar sticky top-0 z-10 shrink-0">
@@ -44,6 +54,10 @@ export const DashboardSidebar = ({
       <ScrollArea className="flex-1 overflow-x-hidden">
         <div className="p-4 space-y-4 overflow-hidden">
           <FileUpload onDataLoaded={onDataLoaded} />
+          
+          <Separator />
+          
+          <TPUUpload onTPULoaded={handleTPULoaded} />
           
           <Separator />
           

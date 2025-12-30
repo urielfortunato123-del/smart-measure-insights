@@ -179,7 +179,7 @@ export const FileUpload = ({ onDataLoaded }: FileUploadProps) => {
       <CardHeader className="pb-3">
         <CardTitle className="text-sm font-medium flex items-center gap-2">
           <FileSpreadsheet className="h-4 w-4 text-primary" />
-          Importar Dados
+          Importar Dados de Medição
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">

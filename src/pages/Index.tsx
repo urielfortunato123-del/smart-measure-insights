@@ -84,6 +84,7 @@ const Index = () => {
         responsaveis={responsaveis}
         locais={locais}
         disciplinas={disciplinas}
+        data={filteredData}
       />
       
       <main className="flex-1 flex flex-col min-h-screen overflow-hidden">

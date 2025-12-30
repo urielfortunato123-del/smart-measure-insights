@@ -3,7 +3,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Bot, Send, User, Sparkles } from 'lucide-react';
+import { Bot, Send, User, Sparkles, AlertCircle, Loader2 } from 'lucide-react';
+import { MeasurementEntry } from '@/types/measurement';
+import { useToast } from '@/hooks/use-toast';
 
 interface Message {
   id: string;
@@ -12,20 +14,23 @@ interface Message {
 }
 
 interface AIAssistantProps {
-  dataContext: string;
+  data: MeasurementEntry[];
 }
 
-export const AIAssistant = ({ dataContext }: AIAssistantProps) => {
+const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/analyze-measurement`;
+
+export const AIAssistant = ({ data }: AIAssistantProps) => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
       role: 'assistant',
-      content: 'Olá! Sou seu assistente de engenharia. Posso ajudar com análises dos dados de medição. Experimente perguntar: "Qual o saldo do Trecho A?" ou "Resumo por disciplina".'
+      content: '👋 Olá! Sou seu assistente de análise de medições.\n\nPosso ajudar a:\n• Identificar erros de cálculo\n• Analisar outliers\n• Resumir dados por disciplina\n• Detectar inconsistências\n\nCarregue uma planilha e pergunte algo!'
     }
   ]);
   const [input, setInput] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -33,51 +38,106 @@ export const AIAssistant = ({ dataContext }: AIAssistantProps) => {
     }
   }, [messages]);
 
-  const generateResponse = (question: string): string => {
-    const q = question.toLowerCase();
+  const streamChat = async (userMessage: string) => {
+    const userMsg: Message = {
+      id: Date.now().toString(),
+      role: 'user',
+      content: userMessage
+    };
     
-    if (q.includes('saldo') || q.includes('balanço') || q.includes('restante')) {
-      return `📊 **Análise de Saldo**\n\nCom base nos dados atuais:\n\n• **Terraplanagem**: R$ 1.337.734,25 medido\n• **Pavimentação**: R$ 178.450,00 medido\n• **Drenagem**: R$ 70.450,00 medido\n\nO Trecho A concentra a maior parte das medições. Deseja um detalhamento por local?`;
-    }
-    
-    if (q.includes('resumo') || q.includes('geral') || q.includes('overview')) {
-      return `📈 **Resumo Executivo**\n\n• **Total Medido**: R$ 1.866.634,25\n• **12 itens** lançados\n• **1 outlier** detectado (Escavação em rocha)\n• **4 disciplinas** ativas\n\nA disciplina com maior valor é Terraplanagem (72% do total).`;
-    }
-    
-    if (q.includes('outlier') || q.includes('alerta') || q.includes('problema')) {
-      return `⚠️ **Análise de Outliers**\n\nDetectei 1 potencial anomalia:\n\n• **Escavação em rocha** (21/01)\n  - Valor: R$ 1.275.000,00\n  - 3.2x acima da média de Terraplanagem\n\nRecomendo verificar se a quantidade de 15.000m³ está correta.`;
-    }
-    
-    if (q.includes('disciplina') || q.includes('atividade')) {
-      return `🏗️ **Composição por Disciplina**\n\n1. **Terraplanagem**: R$ 1.337.734 (72%)\n2. **Sinalização**: R$ 173.750 (9%)\n3. **Pavimentação**: R$ 178.450 (10%)\n4. **Drenagem**: R$ 70.450 (4%)\n5. **Obras de Arte**: R$ 106.250 (6%)`;
-    }
+    setMessages(prev => [...prev, userMsg]);
+    setIsLoading(true);
 
-    return `Entendi sua pergunta sobre "${question}".\n\nCom base nos dados carregados, posso fornecer análises sobre:\n• Saldos e balanços por trecho\n• Composição por disciplina\n• Detecção de outliers\n• Evolução temporal\n\nPode reformular sua pergunta?`;
+    try {
+      const resp = await fetch(CHAT_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({ 
+          messages: [...messages.filter(m => m.id !== '1'), userMsg].map(m => ({
+            role: m.role,
+            content: m.content
+          })),
+          data: data.length > 0 ? data : null,
+          action: userMessage.toLowerCase().includes('erro') ? 'analyze_errors' : 'chat'
+        }),
+      });
+
+      if (!resp.ok) {
+        const errorData = await resp.json().catch(() => ({}));
+        throw new Error(errorData.error || `Erro ${resp.status}`);
+      }
+
+      if (!resp.body) throw new Error("No response body");
+
+      const reader = resp.body.getReader();
+      const decoder = new TextDecoder();
+      let textBuffer = "";
+      let assistantContent = "";
+
+      // Create assistant message placeholder
+      const assistantId = (Date.now() + 1).toString();
+      setMessages(prev => [...prev, { id: assistantId, role: 'assistant', content: '' }]);
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        
+        textBuffer += decoder.decode(value, { stream: true });
+
+        let newlineIndex: number;
+        while ((newlineIndex = textBuffer.indexOf("\n")) !== -1) {
+          let line = textBuffer.slice(0, newlineIndex);
+          textBuffer = textBuffer.slice(newlineIndex + 1);
+
+          if (line.endsWith("\r")) line = line.slice(0, -1);
+          if (line.startsWith(":") || line.trim() === "") continue;
+          if (!line.startsWith("data: ")) continue;
+
+          const jsonStr = line.slice(6).trim();
+          if (jsonStr === "[DONE]") break;
+
+          try {
+            const parsed = JSON.parse(jsonStr);
+            const content = parsed.choices?.[0]?.delta?.content as string | undefined;
+            if (content) {
+              assistantContent += content;
+              setMessages(prev => 
+                prev.map(m => m.id === assistantId ? { ...m, content: assistantContent } : m)
+              );
+            }
+          } catch {
+            textBuffer = line + "\n" + textBuffer;
+            break;
+          }
+        }
+      }
+    } catch (error) {
+      console.error('AI Error:', error);
+      toast({
+        title: 'Erro na IA',
+        description: error instanceof Error ? error.message : 'Erro ao processar',
+        variant: 'destructive'
+      });
+      
+      // Add error message
+      setMessages(prev => [...prev, {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: `❌ Desculpe, ocorreu um erro. ${error instanceof Error ? error.message : 'Tente novamente.'}`
+      }]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleSend = () => {
-    if (!input.trim()) return;
-
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      role: 'user',
-      content: input
-    };
-
-    setMessages(prev => [...prev, userMessage]);
+    if (!input.trim() || isLoading) return;
+    const message = input;
     setInput('');
-    setIsTyping(true);
-
-    // Simulate AI response delay
-    setTimeout(() => {
-      const assistantMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: 'assistant',
-        content: generateResponse(input)
-      };
-      setMessages(prev => [...prev, assistantMessage]);
-      setIsTyping(false);
-    }, 1000 + Math.random() * 1000);
+    streamChat(message);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -87,15 +147,29 @@ export const AIAssistant = ({ dataContext }: AIAssistantProps) => {
     }
   };
 
+  const quickActions = [
+    { label: 'Verificar erros', action: 'Verifique erros de cálculo nos dados' },
+    { label: 'Resumo geral', action: 'Faça um resumo geral dos dados' },
+    { label: 'Outliers', action: 'Identifique outliers e valores suspeitos' }
+  ];
+
   return (
     <Card className="border-border flex flex-col h-[400px]">
       <CardHeader className="pb-3 shrink-0">
         <CardTitle className="text-sm font-medium flex items-center gap-2">
           <Sparkles className="h-4 w-4 text-primary" />
           Assistente IA
+          <span className="text-xs text-muted-foreground font-normal ml-auto">Gemini 2.5</span>
         </CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col flex-1 min-h-0 p-3 pt-0">
+        {data.length === 0 && (
+          <div className="flex items-center gap-2 p-2 mb-2 bg-muted/50 rounded-lg text-xs text-muted-foreground">
+            <AlertCircle className="h-3.5 w-3.5" />
+            Carregue uma planilha para análise completa
+          </div>
+        )}
+        
         <ScrollArea className="flex-1 pr-3" ref={scrollRef}>
           <div className="space-y-3">
             {messages.map((message) => (
@@ -124,7 +198,7 @@ export const AIAssistant = ({ dataContext }: AIAssistantProps) => {
                 )}
               </div>
             ))}
-            {isTyping && (
+            {isLoading && messages[messages.length - 1]?.content === '' && (
               <div className="flex gap-2">
                 <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
                   <Bot className="h-3.5 w-3.5 text-primary" />
@@ -140,6 +214,25 @@ export const AIAssistant = ({ dataContext }: AIAssistantProps) => {
             )}
           </div>
         </ScrollArea>
+
+        {/* Quick actions */}
+        {data.length > 0 && messages.length <= 2 && (
+          <div className="flex gap-1 mt-2 flex-wrap">
+            {quickActions.map((qa) => (
+              <Button
+                key={qa.label}
+                variant="outline"
+                size="sm"
+                className="text-xs h-7"
+                onClick={() => streamChat(qa.action)}
+                disabled={isLoading}
+              >
+                {qa.label}
+              </Button>
+            ))}
+          </div>
+        )}
+
         <div className="flex gap-2 mt-3 shrink-0">
           <Input
             placeholder="Pergunte algo..."
@@ -147,13 +240,18 @@ export const AIAssistant = ({ dataContext }: AIAssistantProps) => {
             onChange={(e) => setInput(e.target.value)}
             onKeyPress={handleKeyPress}
             className="bg-secondary/50"
+            disabled={isLoading}
           />
           <Button 
             size="icon" 
             onClick={handleSend}
-            disabled={!input.trim() || isTyping}
+            disabled={!input.trim() || isLoading}
           >
-            <Send className="h-4 w-4" />
+            {isLoading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Send className="h-4 w-4" />
+            )}
           </Button>
         </div>
       </CardContent>

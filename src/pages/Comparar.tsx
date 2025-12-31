@@ -109,7 +109,7 @@ const Comparar = () => {
           
           {result && (
             <div className="ml-auto">
-              <Button variant="outline" size="sm" onClick={handleReset}>
+              <Button variant="secondary" size="sm" onClick={handleReset}>
                 Nova Comparação
               </Button>
             </div>

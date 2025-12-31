@@ -192,19 +192,19 @@ export const MindMapCanvas = ({ data, onDataChange, isGenerating }: MindMapCanva
 
       {/* Add buttons */}
       <div className="flex flex-wrap gap-2">
-        <Button size="sm" variant="outline" onClick={() => handleAddRootNode('methodology')}>
+        <Button size="sm" variant="secondary" onClick={() => handleAddRootNode('methodology')}>
           <Plus className="h-3 w-3 mr-1" />
           Metodologia
         </Button>
-        <Button size="sm" variant="outline" onClick={() => handleAddRootNode('tpu')}>
+        <Button size="sm" variant="secondary" onClick={() => handleAddRootNode('tpu')}>
           <Plus className="h-3 w-3 mr-1" />
           TPU/SINAPI
         </Button>
-        <Button size="sm" variant="outline" onClick={() => handleAddRootNode('attention')}>
+        <Button size="sm" variant="secondary" onClick={() => handleAddRootNode('attention')}>
           <Plus className="h-3 w-3 mr-1" />
           Atenção
         </Button>
-        <Button size="sm" variant="outline" onClick={() => handleAddRootNode('calculation')}>
+        <Button size="sm" variant="secondary" onClick={() => handleAddRootNode('calculation')}>
           <Plus className="h-3 w-3 mr-1" />
           Cálculo
         </Button>

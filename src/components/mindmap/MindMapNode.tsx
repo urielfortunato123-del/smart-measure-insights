@@ -159,7 +159,7 @@ export const MindMapNodeComponent = ({
                     <Check className="h-3 w-3 mr-1" />
                     Salvar
                   </Button>
-                  <Button size="sm" variant="outline" onClick={handleCancel}>
+                  <Button size="sm" variant="secondary" onClick={handleCancel}>
                     <X className="h-3 w-3 mr-1" />
                     Cancelar
                   </Button>

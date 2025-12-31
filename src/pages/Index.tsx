@@ -122,9 +122,9 @@ const Index = () => {
 
   const sidebarPanel = !isHidden && (
     <ResizablePanel 
-      defaultSize={layout.sidebarSize} 
-      minSize={12} 
-      maxSize={40}
+      defaultSize={15} 
+      minSize={10} 
+      maxSize={20}
     >
       <DashboardSidebar
         onDataLoaded={handleDataLoaded}

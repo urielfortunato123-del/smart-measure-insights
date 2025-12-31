@@ -150,7 +150,7 @@ const Index = () => {
           <ResizableHandle withHandle className="bg-border hover:bg-primary/20 transition-colors" />
         )}
         
-        <ResizablePanel defaultSize={isHidden ? 100 : 100 - layout.sidebarSize}>
+        <ResizablePanel defaultSize={isHidden ? 100 : 100 - layout.sidebarSize} minSize={5}>
       
       <main className="flex-1 flex flex-col min-h-screen overflow-hidden">
         <DashboardHeader lastUpdate={lastUpdate} onRefresh={handleRefresh} />

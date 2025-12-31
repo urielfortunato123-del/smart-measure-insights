@@ -68,6 +68,20 @@ const getErrorConfig = (error: CellError) => {
           'Marque como N/A se não aplicável'
         ]
       };
+    default:
+      return {
+        icon: AlertTriangle,
+        color: 'text-amber-600',
+        bgColor: 'bg-amber-500/10',
+        label: 'Padrão Suspeito',
+        explanation: 'Foi identificado um padrão que pode indicar um problema ou necessita de atenção.',
+        suggestions: [
+          'Revise o item manualmente',
+          'Verifique se há erros de digitação',
+          'Compare com outros itens similares',
+          'Consulte o responsável pelo lançamento'
+        ]
+      };
   }
 };
 

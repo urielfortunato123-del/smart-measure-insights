@@ -9,6 +9,7 @@ import { SmartCompositionChart } from '@/components/dashboard/SmartCompositionCh
 import { SmartDataTable } from '@/components/dashboard/SmartDataTable';
 import { AlertsPanel } from '@/components/dashboard/AlertsPanel';
 import { AlertDetailModal } from '@/components/dashboard/AlertDetailModal';
+import { UpdatesNotification } from '@/components/updates/UpdatesNotification';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { getUniqueValues, demoMeasurements } from '@/data/sampleData';
@@ -250,6 +251,9 @@ const Index = () => {
         relatedItem={relatedItem}
         allData={filteredData}
       />
+
+      {/* Updates Notification */}
+      <UpdatesNotification />
     </div>
   );
 };

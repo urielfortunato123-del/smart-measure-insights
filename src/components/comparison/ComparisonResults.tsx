@@ -1,8 +1,10 @@
+import { useState } from 'react';
 import { ComparisonResult, ComparisonItem } from '@/types/comparison';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { TrendingUp, TrendingDown, Minus, Plus, X, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import { formatCurrency } from '@/lib/analytics';
 import { formatVariation, getStatusLabel, getStatusBadgeVariant } from '@/lib/comparisonUtils';
@@ -12,8 +14,11 @@ interface ComparisonResultsProps {
   onClose?: () => void;
 }
 
+type FilterType = 'novo' | 'removido' | 'aumentou' | 'diminuiu' | null;
+
 export const ComparisonResults = ({ result, onClose }: ComparisonResultsProps) => {
   const { resumo, items, nomeBase, nomeComparacao, tipo } = result;
+  const [filterModal, setFilterModal] = useState<FilterType>(null);
   
   const getStatusIcon = (status: ComparisonItem['status']) => {
     switch (status) {
@@ -31,8 +36,94 @@ export const ComparisonResults = ({ result, onClose }: ComparisonResultsProps) =
     return value > 0 ? 'text-warning' : 'text-success';
   };
 
+  const getFilteredItems = (filter: FilterType) => {
+    if (!filter) return [];
+    return items.filter(item => item.status === filter);
+  };
+
+  const getFilterTitle = (filter: FilterType) => {
+    switch (filter) {
+      case 'novo': return 'Itens Novos';
+      case 'removido': return 'Itens Removidos';
+      case 'aumentou': return 'Itens que Aumentaram';
+      case 'diminuiu': return 'Itens que Diminuíram';
+      default: return '';
+    }
+  };
+
+  const getFilterStyle = (filter: FilterType) => {
+    switch (filter) {
+      case 'novo': return { icon: Plus, color: 'text-primary', bg: 'bg-primary/10' };
+      case 'removido': return { icon: X, color: 'text-destructive', bg: 'bg-destructive/10' };
+      case 'aumentou': return { icon: ArrowUpRight, color: 'text-warning', bg: 'bg-warning/10' };
+      case 'diminuiu': return { icon: ArrowDownRight, color: 'text-success', bg: 'bg-success/10' };
+      default: return { icon: Minus, color: 'text-muted-foreground', bg: 'bg-muted' };
+    }
+  };
+
+  const filteredItems = getFilteredItems(filterModal);
+
   return (
     <div className="space-y-6">
+      {/* Filter Modal */}
+      <Dialog open={filterModal !== null} onOpenChange={(open) => !open && setFilterModal(null)}>
+        <DialogContent className="max-w-4xl max-h-[85vh] flex flex-col p-0 gap-0">
+          <DialogHeader className="shrink-0 p-6 pb-4">
+            <DialogTitle className="flex items-center gap-3">
+              {filterModal && (() => {
+                const style = getFilterStyle(filterModal);
+                const Icon = style.icon;
+                return (
+                  <>
+                    <div className={`p-2 rounded-lg ${style.bg}`}>
+                      <Icon className={`h-5 w-5 ${style.color}`} />
+                    </div>
+                    <span>{getFilterTitle(filterModal)}</span>
+                    <Badge variant="secondary" className="ml-2">{filteredItems.length} itens</Badge>
+                  </>
+                );
+              })()}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 min-h-0 overflow-hidden">
+            <ScrollArea className="h-full max-h-[calc(85vh-100px)]">
+              <div className="px-6 pb-6">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-[120px]">Código</TableHead>
+                      <TableHead>Descrição</TableHead>
+                      <TableHead className="w-[60px]">Un</TableHead>
+                      <TableHead className="text-right w-[120px]">Valor Base</TableHead>
+                      <TableHead className="text-right w-[120px]">Valor Atual</TableHead>
+                      <TableHead className="text-right w-[100px]">Variação</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredItems.map((item, idx) => (
+                      <TableRow key={idx}>
+                        <TableCell className="font-mono text-xs">{item.codigo}</TableCell>
+                        <TableCell className="text-sm">{item.descricao}</TableCell>
+                        <TableCell className="text-xs text-muted-foreground">{item.unidade || '-'}</TableCell>
+                        <TableCell className="text-right text-sm">
+                          {item.valorBase !== undefined ? formatCurrency(item.valorBase) : '-'}
+                        </TableCell>
+                        <TableCell className="text-right text-sm">
+                          {item.valorComparacao !== undefined ? formatCurrency(item.valorComparacao) : '-'}
+                        </TableCell>
+                        <TableCell className={`text-right font-medium ${getVariationColor(item.variacaoPreco || item.variacaoTotal)}`}>
+                          {formatVariation(item.variacaoPreco || item.variacaoTotal)}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </ScrollArea>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Summary Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
         <Card>
@@ -49,7 +140,10 @@ export const ComparisonResults = ({ result, onClose }: ComparisonResultsProps) =
           </CardContent>
         </Card>
         
-        <Card className="bg-primary/5 border-primary/20">
+        <Card 
+          className="bg-primary/5 border-primary/20 cursor-pointer hover:bg-primary/10 transition-colors"
+          onClick={() => setFilterModal('novo')}
+        >
           <CardContent className="pt-4">
             <div className="flex items-center gap-1">
               <Plus className="h-3 w-3 text-primary" />
@@ -59,7 +153,10 @@ export const ComparisonResults = ({ result, onClose }: ComparisonResultsProps) =
           </CardContent>
         </Card>
         
-        <Card className="bg-destructive/5 border-destructive/20">
+        <Card 
+          className="bg-destructive/5 border-destructive/20 cursor-pointer hover:bg-destructive/10 transition-colors"
+          onClick={() => setFilterModal('removido')}
+        >
           <CardContent className="pt-4">
             <div className="flex items-center gap-1">
               <X className="h-3 w-3 text-destructive" />
@@ -69,7 +166,10 @@ export const ComparisonResults = ({ result, onClose }: ComparisonResultsProps) =
           </CardContent>
         </Card>
         
-        <Card className="bg-warning/5 border-warning/20">
+        <Card 
+          className="bg-warning/5 border-warning/20 cursor-pointer hover:bg-warning/10 transition-colors"
+          onClick={() => setFilterModal('aumentou')}
+        >
           <CardContent className="pt-4">
             <div className="flex items-center gap-1">
               <ArrowUpRight className="h-3 w-3 text-warning" />
@@ -79,7 +179,10 @@ export const ComparisonResults = ({ result, onClose }: ComparisonResultsProps) =
           </CardContent>
         </Card>
         
-        <Card className="bg-success/5 border-success/20">
+        <Card 
+          className="bg-success/5 border-success/20 cursor-pointer hover:bg-success/10 transition-colors"
+          onClick={() => setFilterModal('diminuiu')}
+        >
           <CardContent className="pt-4">
             <div className="flex items-center gap-1">
               <ArrowDownRight className="h-3 w-3 text-success" />

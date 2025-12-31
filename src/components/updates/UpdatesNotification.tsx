@@ -24,9 +24,26 @@ export interface UpdateItem {
 // Lista de atualizações - adicione novas atualizações aqui
 export const updates: UpdateItem[] = [
   {
+    id: 'v1.6.0',
+    version: '1.6.0',
+    date: '31/12/2024',
+    title: 'Mapa Mental de Medições',
+    description: 'Gere guias completos de medição com inteligência artificial.',
+    type: 'feature',
+    details: [
+      'Digite o serviço e a IA gera um mapa mental completo',
+      'Metodologia de medição passo a passo',
+      'Códigos de referência TPU/SINAPI',
+      'Pontos de atenção e erros comuns',
+      'Memória de cálculo com fórmulas',
+      'Edição manual dos nós gerados',
+      'Histórico de mapas salvos',
+    ],
+  },
+  {
     id: 'v1.5.0',
     version: '1.5.0',
-    date: '31/12/2024',
+    date: '30/12/2024',
     title: 'Análise Inteligente com IA',
     description: 'Nova funcionalidade de análise automática de planilhas com inteligência artificial.',
     type: 'feature',

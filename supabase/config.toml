@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.analyze-spreadsheet]
 verify_jwt = false
+
+[functions.generate-mindmap]
+verify_jwt = false

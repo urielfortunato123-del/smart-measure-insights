@@ -1,8 +1,9 @@
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState, useCallback } from 'react';
 import jspreadsheet from 'jspreadsheet-ce';
 import 'jspreadsheet-ce/dist/jspreadsheet.css';
 import 'jsuites/dist/jsuites.css';
 import { CellError } from '@/pages/Analise';
+import { ErrorDetailModal } from './ErrorDetailModal';
 
 interface ExcelSpreadsheetProps {
   headers: string[];
@@ -15,6 +16,23 @@ export const ExcelSpreadsheet = ({ headers, data, errors, onDataChange }: ExcelS
   const containerRef = useRef<HTMLDivElement>(null);
   const spreadsheetRef = useRef<any>(null);
   const [isReady, setIsReady] = useState(false);
+  const [selectedError, setSelectedError] = useState<CellError | null>(null);
+  const [selectedCellValue, setSelectedCellValue] = useState<any>(null);
+
+  // Find error for a specific cell
+  const findErrorForCell = useCallback((row: number, col: number) => {
+    return errors.find(e => e.row === row && e.col === col);
+  }, [errors]);
+
+  // Handle cell click to show error details
+  const handleCellClick = useCallback((row: number, col: number) => {
+    const error = findErrorForCell(row, col);
+    if (error) {
+      const cellValue = data[row]?.[col];
+      setSelectedCellValue(cellValue);
+      setSelectedError(error);
+    }
+  }, [findErrorForCell, data]);
 
   // Initialize spreadsheet
   useEffect(() => {
@@ -81,17 +99,20 @@ export const ExcelSpreadsheet = ({ headers, data, errors, onDataChange }: ExcelS
     }
   }, [data, isReady]);
 
-  // Apply error highlighting
+  // Apply error highlighting and click handlers
   useEffect(() => {
-    if (!spreadsheetRef.current || !isReady || errors.length === 0) return;
-    if (!containerRef.current || !spreadsheetRef.current[0]) return;
+    if (!spreadsheetRef.current || !isReady || !containerRef.current || !spreadsheetRef.current[0]) return;
 
-    // Clear previous styles
+    // Clear previous styles and event listeners
     const cells = containerRef.current.querySelectorAll('td');
     cells?.forEach(cell => {
-      cell.classList.remove('cell-error', 'cell-warning', 'cell-info');
+      cell.classList.remove('cell-error', 'cell-warning', 'cell-info', 'cell-clickable');
       cell.removeAttribute('title');
+      cell.removeAttribute('data-error-row');
+      cell.removeAttribute('data-error-col');
     });
+
+    if (errors.length === 0) return;
 
     // Apply error styles using getCellNameFromCoords
     errors.forEach(error => {
@@ -102,14 +123,34 @@ export const ExcelSpreadsheet = ({ headers, data, errors, onDataChange }: ExcelS
         if (cell) {
           const severity = error.severity === 'error' ? 'cell-error' : 
                           error.severity === 'warning' ? 'cell-warning' : 'cell-info';
-          cell.classList.add(severity);
-          cell.setAttribute('title', `${getErrorLabel(error.type)}: ${error.message}`);
+          cell.classList.add(severity, 'cell-clickable');
+          cell.setAttribute('title', `🔍 Clique para ver detalhes: ${getErrorLabel(error.type)}`);
+          cell.setAttribute('data-error-row', String(error.row));
+          cell.setAttribute('data-error-col', String(error.col));
         }
       } catch (e) {
         console.log('Could not highlight cell:', error.row, error.col);
       }
     });
-  }, [errors, isReady]);
+
+    // Add click handler for error cells
+    const clickHandler = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (target.classList.contains('cell-clickable')) {
+        const row = parseInt(target.getAttribute('data-error-row') || '-1');
+        const col = parseInt(target.getAttribute('data-error-col') || '-1');
+        if (row >= 0 && col >= 0) {
+          handleCellClick(row, col);
+        }
+      }
+    };
+
+    containerRef.current.addEventListener('click', clickHandler);
+    
+    return () => {
+      containerRef.current?.removeEventListener('click', clickHandler);
+    };
+  }, [errors, isReady, handleCellClick]);
 
   const getErrorLabel = (type: CellError['type']) => {
     switch (type) {
@@ -121,102 +162,123 @@ export const ExcelSpreadsheet = ({ headers, data, errors, onDataChange }: ExcelS
   };
 
   return (
-    <div className="excel-spreadsheet-container">
-      <style>{`
-        .excel-spreadsheet-container {
-          width: 100%;
-          height: calc(100vh - 200px);
-          overflow: hidden;
-        }
-        .excel-spreadsheet-container .jexcel {
-          font-family: inherit;
-          font-size: 12px;
-        }
-        .excel-spreadsheet-container .jexcel thead td {
-          background: hsl(var(--muted)) !important;
-          color: hsl(var(--foreground)) !important;
-          font-weight: 600;
-          border-color: hsl(var(--border)) !important;
-        }
-        .excel-spreadsheet-container .jexcel tbody td {
-          background: #ffffff !important;
-          color: #1a1a1a !important;
-          border-color: #e5e7eb !important;
-        }
-        .excel-spreadsheet-container .jexcel tbody td:hover {
-          background: hsl(var(--muted)) !important;
-        }
-        .excel-spreadsheet-container .jexcel tbody td.highlight {
-          background: hsl(var(--primary) / 0.1) !important;
-        }
-        .excel-spreadsheet-container .jexcel_pagination {
-          background: hsl(var(--card)) !important;
-          color: hsl(var(--foreground)) !important;
-          border-color: hsl(var(--border)) !important;
-        }
-        .excel-spreadsheet-container .jexcel_pagination select,
-        .excel-spreadsheet-container .jexcel_pagination input {
-          background: hsl(var(--background)) !important;
-          color: hsl(var(--foreground)) !important;
-          border-color: hsl(var(--border)) !important;
-        }
-        .excel-spreadsheet-container .jexcel_content {
-          background: hsl(var(--background)) !important;
-        }
-        .excel-spreadsheet-container .jexcel_search {
-          background: hsl(var(--background)) !important;
-          color: hsl(var(--foreground)) !important;
-          border-color: hsl(var(--border)) !important;
-        }
-        /* Error highlighting */
-        .excel-spreadsheet-container .cell-error {
-          background: hsl(var(--destructive) / 0.2) !important;
-          border: 2px solid hsl(var(--destructive)) !important;
-        }
-        .excel-spreadsheet-container .cell-warning {
-          background: hsl(45 93% 47% / 0.2) !important;
-          border: 2px solid hsl(45 93% 47%) !important;
-        }
-        .excel-spreadsheet-container .cell-info {
-          background: hsl(217 91% 60% / 0.2) !important;
-          border: 2px solid hsl(217 91% 60%) !important;
-        }
-        /* Row numbers */
-        .excel-spreadsheet-container .jexcel tbody td:first-child {
-          background: hsl(var(--muted)) !important;
-          color: hsl(var(--muted-foreground)) !important;
-          font-weight: 500;
-        }
-        /* Selection */
-        .excel-spreadsheet-container .jexcel tbody td.highlight-selected {
-          background: hsl(var(--primary) / 0.15) !important;
-          border-color: hsl(var(--primary)) !important;
-        }
-        /* Toolbar and context menu */
-        .jexcel_contextmenu {
-          background: hsl(var(--popover)) !important;
-          color: hsl(var(--popover-foreground)) !important;
-          border-color: hsl(var(--border)) !important;
-          border-radius: 8px;
-          box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-        }
-        .jexcel_contextmenu a {
-          color: hsl(var(--popover-foreground)) !important;
-        }
-        .jexcel_contextmenu a:hover {
-          background: hsl(var(--muted)) !important;
-        }
-        /* Editor input */
-        .excel-spreadsheet-container .jexcel input {
-          background: hsl(var(--background)) !important;
-          color: hsl(var(--foreground)) !important;
-        }
-        /* Tabs */
-        .jexcel_tabs {
-          display: none !important;
-        }
-      `}</style>
-      <div ref={containerRef} />
-    </div>
+    <>
+      <div className="excel-spreadsheet-container">
+        <style>{`
+          .excel-spreadsheet-container {
+            width: 100%;
+            height: calc(100vh - 200px);
+            overflow: hidden;
+          }
+          .excel-spreadsheet-container .jexcel {
+            font-family: inherit;
+            font-size: 12px;
+          }
+          .excel-spreadsheet-container .jexcel thead td {
+            background: hsl(var(--muted)) !important;
+            color: hsl(var(--foreground)) !important;
+            font-weight: 600;
+            border-color: hsl(var(--border)) !important;
+          }
+          .excel-spreadsheet-container .jexcel tbody td {
+            background: #ffffff !important;
+            color: #1a1a1a !important;
+            border-color: #e5e7eb !important;
+          }
+          .excel-spreadsheet-container .jexcel tbody td:hover {
+            background: hsl(var(--muted)) !important;
+          }
+          .excel-spreadsheet-container .jexcel tbody td.highlight {
+            background: hsl(var(--primary) / 0.1) !important;
+          }
+          .excel-spreadsheet-container .jexcel_pagination {
+            background: hsl(var(--card)) !important;
+            color: hsl(var(--foreground)) !important;
+            border-color: hsl(var(--border)) !important;
+          }
+          .excel-spreadsheet-container .jexcel_pagination select,
+          .excel-spreadsheet-container .jexcel_pagination input {
+            background: hsl(var(--background)) !important;
+            color: hsl(var(--foreground)) !important;
+            border-color: hsl(var(--border)) !important;
+          }
+          .excel-spreadsheet-container .jexcel_content {
+            background: hsl(var(--background)) !important;
+          }
+          .excel-spreadsheet-container .jexcel_search {
+            background: hsl(var(--background)) !important;
+            color: hsl(var(--foreground)) !important;
+            border-color: hsl(var(--border)) !important;
+          }
+          /* Error highlighting with cursor */
+          .excel-spreadsheet-container .cell-clickable {
+            cursor: pointer !important;
+          }
+          .excel-spreadsheet-container .cell-error {
+            background: hsl(var(--destructive) / 0.2) !important;
+            border: 2px solid hsl(var(--destructive)) !important;
+          }
+          .excel-spreadsheet-container .cell-error:hover {
+            background: hsl(var(--destructive) / 0.3) !important;
+          }
+          .excel-spreadsheet-container .cell-warning {
+            background: hsl(45 93% 47% / 0.2) !important;
+            border: 2px solid hsl(45 93% 47%) !important;
+          }
+          .excel-spreadsheet-container .cell-warning:hover {
+            background: hsl(45 93% 47% / 0.3) !important;
+          }
+          .excel-spreadsheet-container .cell-info {
+            background: hsl(217 91% 60% / 0.2) !important;
+            border: 2px solid hsl(217 91% 60%) !important;
+          }
+          .excel-spreadsheet-container .cell-info:hover {
+            background: hsl(217 91% 60% / 0.3) !important;
+          }
+          /* Row numbers */
+          .excel-spreadsheet-container .jexcel tbody td:first-child {
+            background: hsl(var(--muted)) !important;
+            color: hsl(var(--muted-foreground)) !important;
+            font-weight: 500;
+          }
+          /* Selection */
+          .excel-spreadsheet-container .jexcel tbody td.highlight-selected {
+            background: hsl(var(--primary) / 0.15) !important;
+            border-color: hsl(var(--primary)) !important;
+          }
+          /* Toolbar and context menu */
+          .jexcel_contextmenu {
+            background: hsl(var(--popover)) !important;
+            color: hsl(var(--popover-foreground)) !important;
+            border-color: hsl(var(--border)) !important;
+            border-radius: 8px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+          }
+          .jexcel_contextmenu a {
+            color: hsl(var(--popover-foreground)) !important;
+          }
+          .jexcel_contextmenu a:hover {
+            background: hsl(var(--muted)) !important;
+          }
+          /* Editor input */
+          .excel-spreadsheet-container .jexcel input {
+            background: hsl(var(--background)) !important;
+            color: hsl(var(--foreground)) !important;
+          }
+          /* Tabs */
+          .jexcel_tabs {
+            display: none !important;
+          }
+        `}</style>
+        <div ref={containerRef} />
+      </div>
+
+      {/* Error Detail Modal */}
+      <ErrorDetailModal
+        error={selectedError}
+        cellValue={selectedCellValue}
+        onClose={() => setSelectedError(null)}
+      />
+    </>
   );
 };

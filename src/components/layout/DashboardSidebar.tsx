@@ -39,16 +39,16 @@ export const DashboardSidebar = ({
   };
 
   return (
-    <aside className="w-full h-full border-r border-border bg-sidebar flex flex-col overflow-hidden">
-      <div className="p-3 border-b border-border bg-sidebar sticky top-0 z-10 shrink-0">
+    <aside className="w-full h-full border-r border-white/15 bg-white/10 backdrop-blur-xl flex flex-col overflow-hidden">
+      <div className="p-3 border-b border-white/10 bg-white/5 backdrop-blur-sm sticky top-0 z-10 shrink-0">
         <div className="flex items-center gap-2">
           <img 
             src={logo} 
             alt="Engenharia Inteligente" 
-            className="w-10 h-10 object-contain"
+            className="w-10 h-10 object-contain drop-shadow-lg"
           />
           <div>
-            <h1 className="text-sm font-semibold text-foreground">Eng. Inteligente</h1>
+            <h1 className="text-sm font-semibold text-foreground drop-shadow-sm">Eng. Inteligente</h1>
             <p className="text-xs text-muted-foreground">Medições</p>
           </div>
         </div>

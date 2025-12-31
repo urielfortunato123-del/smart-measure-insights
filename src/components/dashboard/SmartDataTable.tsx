@@ -139,7 +139,7 @@ export const SmartDataTable = ({ data }: SmartDataTableProps) => {
             </div>
             {errorCount > 0 && (
               <Button 
-                variant={showOnlyErrors ? "default" : "outline"} 
+                variant={showOnlyErrors ? "default" : "secondary"} 
                 size="sm" 
                 onClick={() => setShowOnlyErrors(!showOnlyErrors)}
                 className="h-8 text-xs"
@@ -148,7 +148,7 @@ export const SmartDataTable = ({ data }: SmartDataTableProps) => {
                 Erros
               </Button>
             )}
-            <Button variant="outline" size="sm" onClick={handleExport} className="h-8 text-xs">
+            <Button variant="secondary" size="sm" onClick={handleExport} className="h-8 text-xs">
               <Download className="h-3.5 w-3.5 mr-1" />
               Exportar
             </Button>

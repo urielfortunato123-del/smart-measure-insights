@@ -175,14 +175,14 @@ export const FileUpload = ({ onDataLoaded }: FileUploadProps) => {
   const currentSheet = sheets.find(s => s.name === selectedSheet);
 
   return (
-    <Card className="border-border">
-      <CardHeader className="pb-2 px-3">
-        <CardTitle className="text-sm font-medium flex items-center gap-2">
-          <FileSpreadsheet className="h-4 w-4 text-primary shrink-0" />
+    <Card className="border-border max-w-[180px]">
+      <CardHeader className="pb-1 px-2 py-2">
+        <CardTitle className="text-xs font-medium flex items-center gap-1">
+          <FileSpreadsheet className="h-3 w-3 text-primary shrink-0" />
           <span className="truncate">Importar Medição</span>
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-3 px-3">
+      <CardContent className="space-y-2 px-2 pb-2">
         <div>
           <input
             ref={fileInputRef}
@@ -196,17 +196,17 @@ export const FileUpload = ({ onDataLoaded }: FileUploadProps) => {
           {!file ? (
             <label 
               htmlFor="file-upload"
-              className="flex flex-col items-center justify-center p-4 border-2 border-dashed border-border rounded-lg cursor-pointer hover:border-primary/50 transition-colors"
+              className="flex flex-col items-center justify-center p-2 border-2 border-dashed border-border rounded-lg cursor-pointer hover:border-primary/50 transition-colors"
             >
               {isLoading ? (
-                <Loader2 className="h-6 w-6 text-primary animate-spin mb-1" />
+                <Loader2 className="h-4 w-4 text-primary animate-spin mb-1" />
               ) : (
-                <Upload className="h-6 w-6 text-muted-foreground mb-1" />
+                <Upload className="h-4 w-4 text-muted-foreground mb-1" />
               )}
-              <span className="text-xs text-muted-foreground">
+              <span className="text-[10px] text-muted-foreground text-center">
                 Clique para upload
               </span>
-              <span className="text-xs text-muted-foreground">
+              <span className="text-[10px] text-muted-foreground">
                 .xlsx, .csv
               </span>
             </label>

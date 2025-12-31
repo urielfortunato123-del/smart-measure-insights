@@ -49,6 +49,8 @@
     "embla-carousel-react": "^8.6.0",
     "html-to-image": "^1.11.13",
     "input-otp": "^1.4.2",
+    "jspreadsheet-ce": "^5.0.4",
+    "jsuites": "^6.0.1",
     "lucide-react": "^0.462.0",
     "next-themes": "^0.3.0",
     "react": "^18.3.1",

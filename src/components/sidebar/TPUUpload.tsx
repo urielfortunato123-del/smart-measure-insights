@@ -140,14 +140,14 @@ export const TPUUpload = ({ onTPULoaded }: TPUUploadProps) => {
   };
 
   return (
-    <Card className="border-border">
-      <CardHeader className="pb-3">
-        <CardTitle className="text-sm font-medium flex items-center gap-2">
-          <Database className="h-4 w-4 text-primary" />
-          Importar TPU / Base de Preços
+    <Card className="border-border max-w-[180px]">
+      <CardHeader className="pb-1 px-2 py-2">
+        <CardTitle className="text-xs font-medium flex items-center gap-1">
+          <Database className="h-3 w-3 text-primary" />
+          <span className="truncate">Importar TPU / Base de Preços</span>
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-2 px-2 pb-2">
         <div>
           <input
             ref={fileInputRef}
@@ -161,17 +161,17 @@ export const TPUUpload = ({ onTPULoaded }: TPUUploadProps) => {
           {!file ? (
             <label 
               htmlFor="tpu-upload"
-              className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-border rounded-lg cursor-pointer hover:border-primary/50 transition-colors"
+              className="flex flex-col items-center justify-center p-2 border-2 border-dashed border-border rounded-lg cursor-pointer hover:border-primary/50 transition-colors"
             >
               {isLoading ? (
-                <Loader2 className="h-8 w-8 text-primary animate-spin mb-2" />
+                <Loader2 className="h-4 w-4 text-primary animate-spin mb-1" />
               ) : (
-                <Upload className="h-8 w-8 text-muted-foreground mb-2" />
+                <Upload className="h-4 w-4 text-muted-foreground mb-1" />
               )}
-              <span className="text-sm text-muted-foreground">
+              <span className="text-[10px] text-muted-foreground text-center">
                 Clique para upload
               </span>
-              <span className="text-xs text-muted-foreground mt-1">
+              <span className="text-[10px] text-muted-foreground text-center">
                 .xlsx, .pdf (DER, DNIT, SINAPI)
               </span>
             </label>

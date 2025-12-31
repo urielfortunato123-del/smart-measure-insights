@@ -1,5 +1,6 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
 import { DashboardSidebar } from '@/components/layout/DashboardSidebar';
 import { DashboardHeader } from '@/components/layout/DashboardHeader';
 import { SmartKPICard } from '@/components/dashboard/SmartKPICard';
@@ -116,16 +117,28 @@ const Index = () => {
 
   return (
     <div className="flex min-h-screen w-full bg-background">
-      <DashboardSidebar
-        onDataLoaded={handleDataLoaded}
-        onAddEntry={handleAddEntry}
-        filters={filters}
-        onFiltersChange={setFilters}
-        responsaveis={responsaveis}
-        locais={locais}
-        disciplinas={disciplinas}
-        data={filteredData}
-      />
+      <ResizablePanelGroup direction="horizontal" className="min-h-screen">
+        <ResizablePanel 
+          defaultSize={20} 
+          minSize={15} 
+          maxSize={35}
+          className="min-w-[200px]"
+        >
+          <DashboardSidebar
+            onDataLoaded={handleDataLoaded}
+            onAddEntry={handleAddEntry}
+            filters={filters}
+            onFiltersChange={setFilters}
+            responsaveis={responsaveis}
+            locais={locais}
+            disciplinas={disciplinas}
+            data={filteredData}
+          />
+        </ResizablePanel>
+        
+        <ResizableHandle withHandle className="bg-border hover:bg-primary/20 transition-colors" />
+        
+        <ResizablePanel defaultSize={80}>
       
       <main className="flex-1 flex flex-col min-h-screen overflow-hidden">
         <DashboardHeader lastUpdate={lastUpdate} onRefresh={handleRefresh} />
@@ -209,6 +222,8 @@ const Index = () => {
           </div>
         </ScrollArea>
       </main>
+        </ResizablePanel>
+      </ResizablePanelGroup>
 
       {/* Alert Detail Modal */}
       <AlertDetailModal

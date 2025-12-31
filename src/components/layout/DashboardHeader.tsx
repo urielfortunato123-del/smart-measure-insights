@@ -6,6 +6,7 @@ import { Download, RefreshCw, Calendar, Image, Loader2, LogOut, User, GitCompare
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { toPng } from 'html-to-image';
+import { LayoutControls } from './LayoutControls';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -99,13 +100,16 @@ export const DashboardHeader = ({ lastUpdate, onRefresh }: DashboardHeaderProps)
       </div>
       
       <div className="flex items-center gap-2">
+        <LayoutControls />
+        
+        <div className="h-6 w-px bg-border mx-1" />
+        
         <Button variant="outline" size="sm" onClick={() => navigate('/comparar')}>
           <GitCompareArrows className="h-4 w-4 mr-2" />
-          Comparar
+          <span className="hidden sm:inline">Comparar</span>
         </Button>
         <Button variant="outline" size="sm" onClick={onRefresh}>
-          <RefreshCw className="h-4 w-4 mr-2" />
-          Atualizar
+          <RefreshCw className="h-4 w-4" />
         </Button>
         <Button 
           variant="outline" 
@@ -114,11 +118,10 @@ export const DashboardHeader = ({ lastUpdate, onRefresh }: DashboardHeaderProps)
           disabled={isExporting}
         >
           {isExporting ? (
-            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
-            <Image className="h-4 w-4 mr-2" />
+            <Image className="h-4 w-4" />
           )}
-          Exportar Dashboard
         </Button>
         
         {user ? (

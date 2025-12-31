@@ -14,12 +14,14 @@ import { Button } from '@/components/ui/button';
 import { getUniqueValues, demoMeasurements } from '@/data/sampleData';
 import { MeasurementEntry, FilterState } from '@/types/measurement';
 import { calculateSmartStats, generateAlerts, formatCurrency, formatNumber, Alert } from '@/lib/analytics';
+import { useLayout } from '@/contexts/LayoutContext';
 import { Ruler, DollarSign, FileText, AlertTriangle, Play, Sparkles } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 
 const Index = () => {
   const { user, loading } = useAuth();
+  const { layout } = useLayout();
   const navigate = useNavigate();
   const [data, setData] = useState<MeasurementEntry[]>([]);
   const [lastUpdate, setLastUpdate] = useState(new Date());
@@ -115,30 +117,40 @@ const Index = () => {
     return null;
   }
 
+  const isHorizontal = layout.sidebarPosition === 'left' || layout.sidebarPosition === 'right';
+  const isHidden = layout.sidebarPosition === 'hidden';
+
+  const sidebarPanel = !isHidden && (
+    <ResizablePanel 
+      defaultSize={layout.sidebarSize} 
+      minSize={12} 
+      maxSize={40}
+    >
+      <DashboardSidebar
+        onDataLoaded={handleDataLoaded}
+        onAddEntry={handleAddEntry}
+        filters={filters}
+        onFiltersChange={setFilters}
+        responsaveis={responsaveis}
+        locais={locais}
+        disciplinas={disciplinas}
+        data={filteredData}
+      />
+    </ResizablePanel>
+  );
+
   return (
     <div className="flex min-h-screen w-full bg-background">
-      <ResizablePanelGroup direction="horizontal" className="min-h-screen">
-        <ResizablePanel 
-          defaultSize={20} 
-          minSize={15} 
-          maxSize={35}
-          className="min-w-[200px]"
-        >
-          <DashboardSidebar
-            onDataLoaded={handleDataLoaded}
-            onAddEntry={handleAddEntry}
-            filters={filters}
-            onFiltersChange={setFilters}
-            responsaveis={responsaveis}
-            locais={locais}
-            disciplinas={disciplinas}
-            data={filteredData}
-          />
-        </ResizablePanel>
+      <ResizablePanelGroup 
+        direction={isHorizontal ? 'horizontal' : 'vertical'} 
+        className="min-h-screen"
+      >
+        {(layout.sidebarPosition === 'left' || layout.sidebarPosition === 'top') && sidebarPanel}
+        {!isHidden && (layout.sidebarPosition === 'left' || layout.sidebarPosition === 'top') && (
+          <ResizableHandle withHandle className="bg-border hover:bg-primary/20 transition-colors" />
+        )}
         
-        <ResizableHandle withHandle className="bg-border hover:bg-primary/20 transition-colors" />
-        
-        <ResizablePanel defaultSize={80}>
+        <ResizablePanel defaultSize={isHidden ? 100 : 100 - layout.sidebarSize}>
       
       <main className="flex-1 flex flex-col min-h-screen overflow-hidden">
         <DashboardHeader lastUpdate={lastUpdate} onRefresh={handleRefresh} />
@@ -223,6 +235,11 @@ const Index = () => {
         </ScrollArea>
       </main>
         </ResizablePanel>
+        
+        {!isHidden && (layout.sidebarPosition === 'right' || layout.sidebarPosition === 'bottom') && (
+          <ResizableHandle withHandle className="bg-border hover:bg-primary/20 transition-colors" />
+        )}
+        {(layout.sidebarPosition === 'right' || layout.sidebarPosition === 'bottom') && sidebarPanel}
       </ResizablePanelGroup>
 
       {/* Alert Detail Modal */}

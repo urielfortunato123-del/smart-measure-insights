@@ -48,8 +48,9 @@ serve(async (req) => {
     const numericCols: number[] = [];
     const valueColPatterns = ['valor', 'total', 'preco', 'preço', 'custo', 'qtd', 'quantidade'];
     
-    headers.forEach((header: string, colIndex: number) => {
-      const headerLower = header.toLowerCase();
+    headers.forEach((header: string | null | undefined, colIndex: number) => {
+      if (!header) return;
+      const headerLower = String(header).toLowerCase();
       if (valueColPatterns.some(p => headerLower.includes(p))) {
         numericCols.push(colIndex);
       }
@@ -57,27 +58,32 @@ serve(async (req) => {
 
     // Check for missing data and build duplicate map
     data.forEach((row: any, rowIndex: number) => {
-      headers.forEach((header: string, colIndex: number) => {
+      if (!row || !Array.isArray(row)) return;
+      
+      headers.forEach((header: string | null | undefined, colIndex: number) => {
         const value = row[colIndex];
+        const headerName = header ? String(header) : `Coluna ${colIndex + 1}`;
         
-        // Missing data check
-        if (value === null || value === undefined || value === '') {
+        // Missing data check - only for first few important columns
+        if (colIndex < 5 && (value === null || value === undefined || value === '')) {
           errors.push({
             row: rowIndex,
             col: colIndex,
             type: 'missing',
-            message: `Campo "${header}" está vazio`,
+            message: `Campo "${headerName}" está vazio`,
             severity: 'info'
           });
         }
         
         // Build duplicate detection map for key columns
-        if (colIndex === 0 && value) { // First column often is ID/code
+        if (colIndex === 0 && value != null && value !== '') {
           const key = String(value).toLowerCase().trim();
-          if (!seenValues.has(key)) {
-            seenValues.set(key, []);
+          if (key) {
+            if (!seenValues.has(key)) {
+              seenValues.set(key, []);
+            }
+            seenValues.get(key)!.push(rowIndex);
           }
-          seenValues.get(key)!.push(rowIndex);
         }
       });
     });

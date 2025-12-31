@@ -38,7 +38,7 @@ export const DashboardSidebar = ({
   };
 
   return (
-    <aside className="w-80 min-w-[320px] border-r border-border bg-sidebar shrink-0 flex flex-col h-screen overflow-hidden">
+    <aside className="w-72 min-w-[288px] border-r border-border bg-sidebar shrink-0 flex flex-col h-screen overflow-hidden">
       <div className="p-4 border-b border-border bg-sidebar sticky top-0 z-10 shrink-0">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">

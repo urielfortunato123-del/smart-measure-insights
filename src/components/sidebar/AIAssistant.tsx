@@ -223,7 +223,7 @@ export const AIAssistant = ({ data }: AIAssistantProps) => {
                 key={qa.label}
                 variant="outline"
                 size="sm"
-                className="text-xs h-7"
+                className="text-xs h-7 text-card-foreground bg-card/80 border-border hover:bg-card"
                 onClick={() => streamChat(qa.action)}
                 disabled={isLoading}
               >

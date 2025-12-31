@@ -1,7 +1,6 @@
 import { useState, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { 
   Upload, 
@@ -14,7 +13,7 @@ import {
 import { Link } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import * as XLSX from 'xlsx';
-import { SpreadsheetGrid } from '@/components/analysis/SpreadsheetGrid';
+import { ExcelSpreadsheet } from '@/components/analysis/ExcelSpreadsheet';
 import { AnalysisSummary } from '@/components/analysis/AnalysisSummary';
 
 export interface CellError {
@@ -130,12 +129,7 @@ const Analise = () => {
     }
   };
 
-  const handleCellChange = (rowIndex: number, colIndex: number, value: any) => {
-    const newData = [...data];
-    if (!newData[rowIndex]) {
-      newData[rowIndex] = [];
-    }
-    newData[rowIndex][colIndex] = value;
+  const handleDataChange = (newData: any[][]) => {
     setData(newData);
   };
 
@@ -263,14 +257,12 @@ const Analise = () => {
                     </div>
                   </div>
                 </CardHeader>
-                <ScrollArea className="h-[calc(100vh-200px)]">
-                  <SpreadsheetGrid
-                    headers={headers}
-                    data={data}
-                    errors={analysisResult?.errors || []}
-                    onCellChange={handleCellChange}
-                  />
-                </ScrollArea>
+                <ExcelSpreadsheet
+                  headers={headers}
+                  data={data}
+                  errors={analysisResult?.errors || []}
+                  onDataChange={handleDataChange}
+                />
               </Card>
             </div>
           </div>

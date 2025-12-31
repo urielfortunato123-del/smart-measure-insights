@@ -39,7 +39,7 @@ export const DashboardSidebar = ({
   };
 
   return (
-    <aside className="w-[190px] min-w-[190px] max-w-[190px] h-full border-r border-border bg-sidebar flex flex-col overflow-hidden">
+    <aside className="w-full h-full border-r border-border bg-sidebar flex flex-col overflow-hidden">
       <div className="p-3 border-b border-border bg-sidebar sticky top-0 z-10 shrink-0">
         <div className="flex items-center gap-2">
           <img 

@@ -139,7 +139,7 @@ export const DataTable = ({ data }: DataTableProps) => {
           </div>
           {errorCount > 0 && (
             <Button 
-              variant={showOnlyErrors ? "default" : "outline"} 
+              variant={showOnlyErrors ? "default" : "secondary"} 
               size="sm" 
               onClick={() => setShowOnlyErrors(!showOnlyErrors)}
             >
@@ -147,7 +147,7 @@ export const DataTable = ({ data }: DataTableProps) => {
               Erros
             </Button>
           )}
-          <Button variant="outline" size="sm" onClick={handleExport}>
+          <Button variant="secondary" size="sm" onClick={handleExport}>
             <Download className="h-4 w-4 mr-1" />
             Exportar
           </Button>

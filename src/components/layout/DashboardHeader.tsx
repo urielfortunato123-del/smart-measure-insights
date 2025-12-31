@@ -2,7 +2,8 @@ import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Download, RefreshCw, Calendar, Image, Loader2, LogOut, User, GitCompareArrows, Sparkles } from 'lucide-react';
+import { Download, RefreshCw, Calendar, Image, Loader2, LogOut, User, GitCompareArrows, Sparkles, BookOpen } from 'lucide-react';
+import { UserGuide } from '@/components/guide/UserGuide';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { toPng } from 'html-to-image';
@@ -22,6 +23,7 @@ interface DashboardHeaderProps {
 
 export const DashboardHeader = ({ lastUpdate, onRefresh }: DashboardHeaderProps) => {
   const [isExporting, setIsExporting] = useState(false);
+  const [guideOpen, setGuideOpen] = useState(false);
   const { toast } = useToast();
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
@@ -104,6 +106,10 @@ export const DashboardHeader = ({ lastUpdate, onRefresh }: DashboardHeaderProps)
         
         <div className="h-6 w-px bg-border mx-1" />
         
+        <Button variant="ghost" size="sm" onClick={() => setGuideOpen(true)} title="Manual do Usuário">
+          <BookOpen className="h-4 w-4" />
+        </Button>
+        
         <Button variant="outline" size="sm" onClick={() => navigate('/analise')}>
           <Sparkles className="h-4 w-4 mr-2" />
           <span className="hidden sm:inline">Análise IA</span>
@@ -154,6 +160,9 @@ export const DashboardHeader = ({ lastUpdate, onRefresh }: DashboardHeaderProps)
           </Button>
         )}
       </div>
+
+      {/* User Guide Modal */}
+      <UserGuide open={guideOpen} onOpenChange={setGuideOpen} />
     </header>
   );
 };

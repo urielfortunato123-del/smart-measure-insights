@@ -353,7 +353,7 @@ export const FileUpload = ({ onDataLoaded }: FileUploadProps) => {
               </Button>
 
               <Button
-                variant="outline"
+                variant="secondary"
                 size="sm"
                 className="w-full h-9"
                 onClick={handleClear}
@@ -371,7 +371,7 @@ export const FileUpload = ({ onDataLoaded }: FileUploadProps) => {
             <Button className="flex-1" disabled>
               Importar Dados
             </Button>
-            <Button variant="outline" onClick={handleClear} disabled={isLoading}>
+            <Button variant="secondary" onClick={handleClear} disabled={isLoading}>
               Limpar
             </Button>
           </div>

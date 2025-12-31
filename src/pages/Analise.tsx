@@ -230,7 +230,7 @@ const Analise = () => {
                       onChange={handleFileUpload}
                       className="hidden"
                     />
-                    <Button variant="outline" asChild className="w-full">
+                    <Button variant="secondary" asChild className="w-full">
                       <span className="cursor-pointer gap-2">
                         <RefreshCw className="h-4 w-4" />
                         Carregar Nova Planilha

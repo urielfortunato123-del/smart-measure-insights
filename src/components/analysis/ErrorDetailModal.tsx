@@ -138,7 +138,7 @@ export const ErrorDetailModal = ({ error, cellValue, onClose }: ErrorDetailModal
 
           {/* Ações */}
           <div className="flex justify-end gap-2 pt-2">
-            <Button variant="outline" onClick={onClose}>
+            <Button variant="secondary" onClick={onClose}>
               Entendi
             </Button>
           </div>

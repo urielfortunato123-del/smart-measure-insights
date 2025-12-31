@@ -33,8 +33,8 @@ export const AnalysisSummary = ({ result, isAnalyzing, onReanalyze }: AnalysisSu
               <Sparkles className="h-8 w-8 text-primary" />
             </div>
           </div>
-          <h3 className="text-lg font-semibold mt-6">Analisando com IA...</h3>
-          <p className="text-sm text-muted-foreground text-center mt-2">
+          <h3 className="text-lg font-semibold mt-6 text-card-foreground">Analisando com IA...</h3>
+          <p className="text-sm text-card-foreground/70 text-center mt-2">
             Verificando erros de cálculo, inconsistências, duplicatas e dados faltantes
           </p>
           <div className="w-full mt-6 space-y-2">
@@ -56,8 +56,8 @@ export const AnalysisSummary = ({ result, isAnalyzing, onReanalyze }: AnalysisSu
           <div className="bg-muted rounded-full p-4">
             <Sparkles className="h-8 w-8 text-muted-foreground" />
           </div>
-          <h3 className="text-lg font-semibold mt-4">Análise Inteligente</h3>
-          <p className="text-sm text-muted-foreground mt-2">
+          <h3 className="text-lg font-semibold mt-4 text-card-foreground">Análise Inteligente</h3>
+          <p className="text-sm text-card-foreground/70 mt-2">
             Clique em "Analisar com IA" para detectar erros automaticamente
           </p>
         </CardContent>

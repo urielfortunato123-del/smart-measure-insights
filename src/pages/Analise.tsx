@@ -188,8 +188,8 @@ const Analise = () => {
                     <Upload className="h-12 w-12 text-primary" />
                   </div>
                 </div>
-                <h2 className="text-xl font-semibold mt-6 mb-2">Carregar Planilha</h2>
-                <p className="text-muted-foreground text-center mb-6 max-w-sm">
+                <h2 className="text-xl font-semibold mt-6 mb-2 text-card-foreground">Carregar Planilha</h2>
+                <p className="text-card-foreground/70 text-center mb-6 max-w-sm">
                   Arraste uma planilha ou clique para selecionar. 
                   Suporta arquivos Excel (.xlsx, .xls) e CSV.
                 </p>

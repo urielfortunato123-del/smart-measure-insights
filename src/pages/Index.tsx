@@ -121,11 +121,7 @@ const Index = () => {
   const isHidden = layout.sidebarPosition === 'hidden';
 
   const sidebarPanel = !isHidden && (
-    <ResizablePanel 
-      defaultSize={15} 
-      minSize={5} 
-      maxSize={20}
-    >
+    <div className="w-[190px] min-w-[190px] max-w-[190px] h-full flex-shrink-0">
       <DashboardSidebar
         onDataLoaded={handleDataLoaded}
         onAddEntry={handleAddEntry}
@@ -136,21 +132,15 @@ const Index = () => {
         disciplinas={disciplinas}
         data={filteredData}
       />
-    </ResizablePanel>
+    </div>
   );
 
   return (
     <div className="flex min-h-screen w-full bg-background">
-      <ResizablePanelGroup 
-        direction={isHorizontal ? 'horizontal' : 'vertical'} 
-        className="min-h-screen"
-      >
+      <div className={`flex ${isHorizontal ? 'flex-row' : 'flex-col'} min-h-screen w-full`}>
         {(layout.sidebarPosition === 'left' || layout.sidebarPosition === 'top') && sidebarPanel}
-        {!isHidden && (layout.sidebarPosition === 'left' || layout.sidebarPosition === 'top') && (
-          <ResizableHandle withHandle className="bg-border hover:bg-primary/20 transition-colors" />
-        )}
         
-        <ResizablePanel defaultSize={isHidden ? 100 : 100 - layout.sidebarSize} minSize={5}>
+        <div className="flex-1 min-w-0">
       
       <main className="flex-1 flex flex-col min-h-screen overflow-hidden">
         <DashboardHeader lastUpdate={lastUpdate} onRefresh={handleRefresh} />
@@ -234,13 +224,10 @@ const Index = () => {
           </div>
         </ScrollArea>
       </main>
-        </ResizablePanel>
+        </div>
         
-        {!isHidden && (layout.sidebarPosition === 'right' || layout.sidebarPosition === 'bottom') && (
-          <ResizableHandle withHandle className="bg-border hover:bg-primary/20 transition-colors" />
-        )}
         {(layout.sidebarPosition === 'right' || layout.sidebarPosition === 'bottom') && sidebarPanel}
-      </ResizablePanelGroup>
+      </div>
 
       {/* Alert Detail Modal */}
       <AlertDetailModal

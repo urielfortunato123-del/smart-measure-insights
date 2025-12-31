@@ -7,8 +7,6 @@ import {
   Upload, 
   FileSpreadsheet, 
   Sparkles, 
-  AlertTriangle, 
-  CheckCircle2,
   ArrowLeft,
   Loader2,
   RefreshCw
@@ -18,7 +16,6 @@ import { useToast } from '@/hooks/use-toast';
 import * as XLSX from 'xlsx';
 import { SpreadsheetGrid } from '@/components/analysis/SpreadsheetGrid';
 import { AnalysisSummary } from '@/components/analysis/AnalysisSummary';
-import { supabase } from '@/integrations/supabase/client';
 
 export interface CellError {
   row: number;

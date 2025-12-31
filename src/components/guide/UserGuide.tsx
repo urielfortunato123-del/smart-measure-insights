@@ -476,7 +476,7 @@ export const UserGuide = ({ open, onOpenChange }: UserGuideProps) => {
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-sm truncate">{section.title}</p>
                       {section.relatedUpdate && (
-                        <Badge variant="outline" className="text-[10px] mt-1 px-1.5 py-0">
+                        <Badge variant="secondary" className="text-[10px] mt-1 px-1.5 py-0">
                           Novidade
                         </Badge>
                       )}

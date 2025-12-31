@@ -176,13 +176,13 @@ export const FileUpload = ({ onDataLoaded }: FileUploadProps) => {
 
   return (
     <Card className="border-border">
-      <CardHeader className="pb-3">
+      <CardHeader className="pb-2 px-3">
         <CardTitle className="text-sm font-medium flex items-center gap-2">
-          <FileSpreadsheet className="h-4 w-4 text-primary" />
-          Importar Dados de Medição
+          <FileSpreadsheet className="h-4 w-4 text-primary shrink-0" />
+          <span className="truncate">Importar Medição</span>
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-3 px-3">
         <div>
           <input
             ref={fileInputRef}
@@ -196,17 +196,17 @@ export const FileUpload = ({ onDataLoaded }: FileUploadProps) => {
           {!file ? (
             <label 
               htmlFor="file-upload"
-              className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-border rounded-lg cursor-pointer hover:border-primary/50 transition-colors"
+              className="flex flex-col items-center justify-center p-4 border-2 border-dashed border-border rounded-lg cursor-pointer hover:border-primary/50 transition-colors"
             >
               {isLoading ? (
-                <Loader2 className="h-8 w-8 text-primary animate-spin mb-2" />
+                <Loader2 className="h-6 w-6 text-primary animate-spin mb-1" />
               ) : (
-                <Upload className="h-8 w-8 text-muted-foreground mb-2" />
+                <Upload className="h-6 w-6 text-muted-foreground mb-1" />
               )}
-              <span className="text-sm text-muted-foreground">
+              <span className="text-xs text-muted-foreground">
                 Clique para upload
               </span>
-              <span className="text-xs text-muted-foreground mt-1">
+              <span className="text-xs text-muted-foreground">
                 .xlsx, .csv
               </span>
             </label>
@@ -236,69 +236,67 @@ export const FileUpload = ({ onDataLoaded }: FileUploadProps) => {
               </div>
             )}
             
-            <div className="space-y-2">
-              <Label className="text-xs">Planilha (Aba)</Label>
+            <div className="space-y-1">
+              <Label className="text-xs">Planilha</Label>
               <Select value={selectedSheet} onValueChange={handleSheetChange}>
-                <SelectTrigger className="bg-secondary/50 w-full">
-                  <SelectValue placeholder="Selecione a planilha" className="truncate" />
+                <SelectTrigger className="bg-secondary/50 w-full h-9 text-xs">
+                  <SelectValue placeholder="Selecione" className="truncate" />
                 </SelectTrigger>
-                <SelectContent className="max-w-[280px]">
+                <SelectContent>
                   {sheets.map(sheet => (
-                    <SelectItem key={sheet.name} value={sheet.name} className="truncate">
-                      <span className="truncate block max-w-[240px]">
-                        {sheet.name} ({sheet.totalRows})
-                      </span>
+                    <SelectItem key={sheet.name} value={sheet.name} className="text-xs">
+                      {sheet.name} ({sheet.totalRows})
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
 
-            <div className="space-y-2">
-              <Label className="text-xs">Período de Medição</Label>
+            <div className="space-y-1">
+              <Label className="text-xs">Período</Label>
               <Select 
                 value={measurementPeriod} 
                 onValueChange={(v) => setMeasurementPeriod(v as MeasurementPeriod)}
               >
-                <SelectTrigger className="bg-secondary/50">
-                  <SelectValue placeholder="Selecione o período" />
+                <SelectTrigger className="bg-secondary/50 h-9 text-xs">
+                  <SelectValue placeholder="Selecione" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="current">Medição Atual</SelectItem>
-                  <SelectItem value="previous">Base Anterior</SelectItem>
-                  <SelectItem value="daily">Diária</SelectItem>
-                  <SelectItem value="weekly">Semanal</SelectItem>
-                  <SelectItem value="monthly">Mensal</SelectItem>
+                  <SelectItem value="current" className="text-xs">Atual</SelectItem>
+                  <SelectItem value="previous" className="text-xs">Anterior</SelectItem>
+                  <SelectItem value="daily" className="text-xs">Diária</SelectItem>
+                  <SelectItem value="weekly" className="text-xs">Semanal</SelectItem>
+                  <SelectItem value="monthly" className="text-xs">Mensal</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
-            <div className="space-y-2">
-              <Label className="text-xs">Ignorar linhas (cabeçalho)</Label>
+            <div className="space-y-1">
+              <Label className="text-xs">Ignorar linhas</Label>
               <Input
                 type="number"
                 min="0"
                 max="50"
                 value={skipRows}
                 onChange={(e) => setSkipRows(e.target.value)}
-                className="bg-secondary/50"
-                placeholder="Ex: 5 para pular logos e títulos"
+                className="bg-secondary/50 h-9 text-xs"
+                placeholder="Ex: 5"
               />
-              <p className="text-xs text-muted-foreground">
-                Pule linhas de logo, título do projeto, etc.
+              <p className="text-xs text-muted-foreground leading-tight">
+                Pule linhas de logo, título, etc.
               </p>
             </div>
 
             {columnMapping && currentSheet && (
               <Collapsible open={showMapping} onOpenChange={setShowMapping}>
                 <CollapsibleTrigger asChild>
-                  <Button variant="ghost" size="sm" className="w-full justify-between">
-                    <span className="flex items-center gap-2">
-                      <Settings2 className="h-4 w-4" />
-                      Mapeamento de Colunas
+                  <Button variant="ghost" size="sm" className="w-full justify-between h-8 px-2">
+                    <span className="flex items-center gap-1 text-xs">
+                      <Settings2 className="h-3 w-3" />
+                      Mapeamento
                     </span>
                     <span className="text-xs text-muted-foreground">
-                      {showMapping ? 'Ocultar' : 'Mostrar'}
+                      {showMapping ? 'Ocultar' : 'Ver'}
                     </span>
                   </Button>
                 </CollapsibleTrigger>
@@ -340,25 +338,24 @@ export const FileUpload = ({ onDataLoaded }: FileUploadProps) => {
 
 
             {/* Actions */}
-            <div className="flex flex-col gap-2">
+            <div className="grid grid-cols-2 gap-2">
               <Button
-                className="w-full"
+                size="sm"
+                className="w-full h-9"
                 onClick={handleProcess}
                 disabled={isLoading || !selectedSheet}
               >
                 {isLoading ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Processando...
-                  </>
+                  <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
-                  'Importar Dados'
+                  'Importar'
                 )}
               </Button>
 
               <Button
                 variant="outline"
-                className="w-full"
+                size="sm"
+                className="w-full h-9"
                 onClick={handleClear}
                 disabled={isLoading}
               >

@@ -279,7 +279,7 @@ export const ComparisonUploader = ({ onCompare }: ComparisonUploaderProps) => {
             Comparar Arquivos
           </Button>
           {(fileBase || fileComparacao) && (
-            <Button variant="outline" onClick={clearFiles}>
+            <Button variant="secondary" onClick={clearFiles}>
               Limpar
             </Button>
           )}

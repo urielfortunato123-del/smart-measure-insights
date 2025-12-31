@@ -141,19 +141,19 @@ const Index = () => {
   );
 
   return (
-    <div className="flex min-h-screen w-full bg-background">
+    <div className="flex min-h-screen w-full liquid-background">
       <ResizablePanelGroup 
         direction={isHorizontal ? 'horizontal' : 'vertical'} 
         className="min-h-screen"
       >
         {(layout.sidebarPosition === 'left' || layout.sidebarPosition === 'top') && sidebarPanel}
         {!isHidden && (layout.sidebarPosition === 'left' || layout.sidebarPosition === 'top') && (
-          <ResizableHandle withHandle className="bg-border hover:bg-primary/20 transition-colors" />
+          <ResizableHandle withHandle className="bg-white/10 hover:bg-white/20 transition-colors" />
         )}
         
         <ResizablePanel defaultSize={isHidden ? 100 : 85} minSize={50}>
       
-      <main className="flex-1 flex flex-col min-h-screen overflow-hidden">
+      <main className="flex-1 flex flex-col min-h-screen overflow-hidden bg-white/5 backdrop-blur-sm">
         <DashboardHeader lastUpdate={lastUpdate} onRefresh={handleRefresh} />
         
         <ScrollArea className="flex-1">

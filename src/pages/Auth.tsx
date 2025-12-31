@@ -134,19 +134,19 @@ const Auth = () => {
 
   if (showForgotPassword) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <div className="min-h-screen flex items-center justify-center liquid-background p-4">
         <div className="w-full max-w-md">
           {/* Logo/Header */}
           <div className="text-center mb-8">
             <img 
               src={logo} 
               alt="Engenharia Inteligente" 
-              className="w-24 h-24 mx-auto mb-4 object-contain"
+              className="w-24 h-24 mx-auto mb-4 object-contain drop-shadow-xl"
             />
-            <p className="text-muted-foreground">Recuperar Senha</p>
+            <p className="text-white/80 drop-shadow-sm">Recuperar Senha</p>
           </div>
 
-          <Card className="border-border">
+          <Card className="border-white/20 bg-white/15 backdrop-blur-xl">
             <CardHeader className="space-y-1 pb-4">
               <CardTitle className="text-xl">Esqueceu a senha?</CardTitle>
               <CardDescription>
@@ -203,18 +203,18 @@ const Auth = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+    <div className="min-h-screen flex items-center justify-center liquid-background p-4">
       <div className="w-full max-w-md">
         {/* Logo/Header */}
         <div className="text-center mb-8">
           <img 
             src={logo} 
             alt="Engenharia Inteligente" 
-            className="w-32 h-32 mx-auto mb-4 object-contain"
+            className="w-32 h-32 mx-auto mb-4 object-contain drop-shadow-xl"
           />
         </div>
 
-        <Card className="border-border">
+        <Card className="border-white/20 bg-white/15 backdrop-blur-xl">
           <CardHeader className="space-y-1 pb-4">
             <CardTitle className="text-xl">Acesse sua Conta</CardTitle>
             <CardDescription>

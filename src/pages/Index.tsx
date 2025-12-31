@@ -121,7 +121,11 @@ const Index = () => {
   const isHidden = layout.sidebarPosition === 'hidden';
 
   const sidebarPanel = !isHidden && (
-    <div className="w-[190px] min-w-[190px] max-w-[190px] h-full flex-shrink-0">
+    <ResizablePanel 
+      defaultSize={15} 
+      minSize={10} 
+      maxSize={30}
+    >
       <DashboardSidebar
         onDataLoaded={handleDataLoaded}
         onAddEntry={handleAddEntry}
@@ -132,15 +136,21 @@ const Index = () => {
         disciplinas={disciplinas}
         data={filteredData}
       />
-    </div>
+    </ResizablePanel>
   );
 
   return (
     <div className="flex min-h-screen w-full bg-background">
-      <div className={`flex ${isHorizontal ? 'flex-row' : 'flex-col'} min-h-screen w-full`}>
+      <ResizablePanelGroup 
+        direction={isHorizontal ? 'horizontal' : 'vertical'} 
+        className="min-h-screen"
+      >
         {(layout.sidebarPosition === 'left' || layout.sidebarPosition === 'top') && sidebarPanel}
+        {!isHidden && (layout.sidebarPosition === 'left' || layout.sidebarPosition === 'top') && (
+          <ResizableHandle withHandle className="bg-border hover:bg-primary/20 transition-colors" />
+        )}
         
-        <div className="flex-1 min-w-0">
+        <ResizablePanel defaultSize={isHidden ? 100 : 85} minSize={50}>
       
       <main className="flex-1 flex flex-col min-h-screen overflow-hidden">
         <DashboardHeader lastUpdate={lastUpdate} onRefresh={handleRefresh} />
@@ -224,10 +234,13 @@ const Index = () => {
           </div>
         </ScrollArea>
       </main>
-        </div>
+        </ResizablePanel>
         
+        {!isHidden && (layout.sidebarPosition === 'right' || layout.sidebarPosition === 'bottom') && (
+          <ResizableHandle withHandle className="bg-border hover:bg-primary/20 transition-colors" />
+        )}
         {(layout.sidebarPosition === 'right' || layout.sidebarPosition === 'bottom') && sidebarPanel}
-      </div>
+      </ResizablePanelGroup>
 
       {/* Alert Detail Modal */}
       <AlertDetailModal

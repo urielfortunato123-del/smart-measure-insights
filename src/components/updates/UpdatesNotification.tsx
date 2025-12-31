@@ -171,7 +171,7 @@ export const UpdatesNotification = () => {
         </div>
 
         {/* Lista de atualizações */}
-        <ScrollArea className="max-h-[50vh] p-6">
+        <ScrollArea className="h-[400px] p-6">
           <div className="space-y-6">
             {newUpdates.map((update, index) => (
               <div 

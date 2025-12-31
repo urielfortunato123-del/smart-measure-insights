@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { TrendingUp, TrendingDown, Minus, Plus, X, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import { formatCurrency } from '@/lib/analytics';
 import { formatVariation, getStatusLabel, getStatusBadgeVariant } from '@/lib/comparisonUtils';
@@ -67,7 +67,7 @@ export const ComparisonResults = ({ result, onClose }: ComparisonResultsProps) =
     <div className="space-y-6">
       {/* Filter Modal */}
       <Dialog open={filterModal !== null} onOpenChange={(open) => !open && setFilterModal(null)}>
-        <DialogContent className="max-w-4xl h-[85vh] flex flex-col p-0 gap-0">
+        <DialogContent className="max-w-6xl h-[85vh] flex flex-col p-0 gap-0">
           <DialogHeader className="shrink-0 p-6 pb-4 border-b">
             <DialogTitle className="flex items-center gap-3">
               {filterModal && (() => {
@@ -84,38 +84,43 @@ export const ComparisonResults = ({ result, onClose }: ComparisonResultsProps) =
                 );
               })()}
             </DialogTitle>
+            <DialogDescription className="sr-only">
+              Lista de itens filtrados (novos, removidos, aumentaram ou diminuíram) para a comparação selecionada.
+            </DialogDescription>
           </DialogHeader>
-          <div className="flex-1 min-h-0 overflow-auto">
-            <Table>
-              <TableHeader className="sticky top-0 bg-background z-10">
-                <TableRow>
-                  <TableHead className="w-[120px]">Código</TableHead>
-                  <TableHead>Descrição</TableHead>
-                  <TableHead className="w-[60px]">Un</TableHead>
-                  <TableHead className="text-right w-[120px]">Valor Base</TableHead>
-                  <TableHead className="text-right w-[120px]">Valor Atual</TableHead>
-                  <TableHead className="text-right w-[100px]">Variação</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredItems.map((item, idx) => (
-                  <TableRow key={idx}>
-                    <TableCell className="font-mono text-xs">{item.codigo}</TableCell>
-                    <TableCell className="text-sm">{item.descricao}</TableCell>
-                    <TableCell className="text-xs text-muted-foreground">{item.unidade || '-'}</TableCell>
-                    <TableCell className="text-right text-sm">
-                      {item.valorBase !== undefined ? formatCurrency(item.valorBase) : '-'}
-                    </TableCell>
-                    <TableCell className="text-right text-sm">
-                      {item.valorComparacao !== undefined ? formatCurrency(item.valorComparacao) : '-'}
-                    </TableCell>
-                    <TableCell className={`text-right font-medium ${getVariationColor(item.variacaoPreco || item.variacaoTotal)}`}>
-                      {formatVariation(item.variacaoPreco || item.variacaoTotal)}
-                    </TableCell>
+          <div className="flex-1 min-h-0 overflow-auto p-6">
+            <div className="w-full overflow-auto">
+              <Table className="min-w-[900px]">
+                <TableHeader className="sticky top-0 bg-background z-10">
+                  <TableRow>
+                    <TableHead className="w-[140px]">Código</TableHead>
+                    <TableHead>Descrição</TableHead>
+                    <TableHead className="w-[80px]">Un</TableHead>
+                    <TableHead className="text-right w-[140px]">Valor Base</TableHead>
+                    <TableHead className="text-right w-[140px]">Valor Atual</TableHead>
+                    <TableHead className="text-right w-[120px]">Variação</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {filteredItems.map((item, idx) => (
+                    <TableRow key={idx}>
+                      <TableCell className="font-mono text-xs whitespace-nowrap">{item.codigo}</TableCell>
+                      <TableCell className="text-sm min-w-[420px]">{item.descricao}</TableCell>
+                      <TableCell className="text-xs text-muted-foreground whitespace-nowrap">{item.unidade || '-'}</TableCell>
+                      <TableCell className="text-right text-sm whitespace-nowrap">
+                        {item.valorBase !== undefined ? formatCurrency(item.valorBase) : '-'}
+                      </TableCell>
+                      <TableCell className="text-right text-sm whitespace-nowrap">
+                        {item.valorComparacao !== undefined ? formatCurrency(item.valorComparacao) : '-'}
+                      </TableCell>
+                      <TableCell className={`text-right font-medium whitespace-nowrap ${getVariationColor(item.variacaoPreco || item.variacaoTotal)}`}>
+                        {formatVariation(item.variacaoPreco || item.variacaoTotal)}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           </div>
         </DialogContent>
       </Dialog>

@@ -9,6 +9,7 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Comparar from "./pages/Comparar";
 import Analise from "./pages/Analise";
+import MapaMental from "./pages/MapaMental";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,6 +27,7 @@ const App = () => (
               <Route path="/auth" element={<Auth />} />
               <Route path="/comparar" element={<Comparar />} />
               <Route path="/analise" element={<Analise />} />
+              <Route path="/mapa-mental" element={<MapaMental />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>

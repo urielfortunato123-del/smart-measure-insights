@@ -30,7 +30,8 @@ import {
   HelpCircle,
   Lightbulb,
   CheckCircle2,
-  ArrowRight
+  ArrowRight,
+  Brain
 } from 'lucide-react';
 import { updates } from '@/components/updates/UpdatesNotification';
 
@@ -271,6 +272,47 @@ const guideSections: GuideSection[] = [
         step: 5,
         title: 'Visualize os resultados',
         description: 'O sistema mostrará itens adicionados (verde), removidos (vermelho) e alterados (amarelo) com detalhes das diferenças.',
+      }
+    ]
+  },
+  {
+    id: 'mindmap',
+    title: 'Mapa Mental',
+    icon: <Brain className="h-5 w-5" />,
+    description: 'Gere guias de medição completos com inteligência artificial',
+    relatedUpdate: 'v1.6.0',
+    steps: [
+      {
+        step: 1,
+        title: 'Acesse o Mapa Mental',
+        description: 'No cabeçalho do Dashboard, clique no botão "Mapa Mental" para abrir a ferramenta.',
+      },
+      {
+        step: 2,
+        title: 'Digite o serviço',
+        description: 'No campo de texto à esquerda, digite o serviço de engenharia que deseja medir (ex: "Revestimento cerâmico", "Pintura externa").',
+        tip: 'Seja específico no nome do serviço para obter resultados mais precisos.'
+      },
+      {
+        step: 3,
+        title: 'Gere com IA',
+        description: 'Clique em "Gerar com IA" e aguarde a inteligência artificial criar o mapa mental completo.',
+      },
+      {
+        step: 4,
+        title: 'Explore os nós',
+        description: 'O mapa será organizado em 4 categorias: Metodologia (como medir), TPU/SINAPI (códigos), Atenção (cuidados) e Cálculo (fórmulas).',
+        tip: 'Clique nos nós para expandir e ver sub-itens com mais detalhes.'
+      },
+      {
+        step: 5,
+        title: 'Edite e personalize',
+        description: 'Use os botões de edição para modificar títulos e descrições. Adicione novos nós clicando no "+" de cada item.',
+      },
+      {
+        step: 6,
+        title: 'Salve no histórico',
+        description: 'Seus mapas são salvos automaticamente no histórico à esquerda. Clique para carregar mapas anteriores.',
       }
     ]
   },

@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Download, RefreshCw, Calendar, Image, Loader2, LogOut, User, GitCompareArrows, Sparkles, BookOpen } from 'lucide-react';
+import { Download, RefreshCw, Calendar, Image, Loader2, LogOut, User, GitCompareArrows, Sparkles, BookOpen, Brain } from 'lucide-react';
 import { UserGuide } from '@/components/guide/UserGuide';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
@@ -117,6 +117,10 @@ export const DashboardHeader = ({ lastUpdate, onRefresh }: DashboardHeaderProps)
         <Button variant="outline" size="sm" onClick={() => navigate('/comparar')}>
           <GitCompareArrows className="h-4 w-4 mr-2" />
           <span className="hidden sm:inline">Comparar</span>
+        </Button>
+        <Button variant="outline" size="sm" onClick={() => navigate('/mapa-mental')}>
+          <Brain className="h-4 w-4 mr-2" />
+          <span className="hidden sm:inline">Mapa Mental</span>
         </Button>
         <Button variant="outline" size="sm" onClick={onRefresh}>
           <RefreshCw className="h-4 w-4" />

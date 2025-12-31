@@ -182,7 +182,7 @@ const MapaMental = () => {
             <Card>
               <CardContent className="p-4 space-y-4">
                 <div>
-                  <label className="text-sm font-medium mb-2 block">
+                  <label className="text-sm font-medium mb-2 block text-card-foreground">
                     Serviço de Engenharia
                   </label>
                   <Input
@@ -211,7 +211,7 @@ const MapaMental = () => {
                   )}
                 </Button>
 
-                <p className="text-xs text-muted-foreground text-center">
+                <p className="text-xs text-card-foreground/70 text-center">
                   A IA criará metodologia, códigos TPU, pontos de atenção e fórmulas de cálculo.
                 </p>
               </CardContent>
@@ -222,8 +222,8 @@ const MapaMental = () => {
               <Card>
                 <CardContent className="p-4">
                   <div className="flex items-center gap-2 mb-3">
-                    <History className="h-4 w-4 text-muted-foreground" />
-                    <h3 className="text-sm font-medium">Histórico</h3>
+                    <History className="h-4 w-4 text-card-foreground/70" />
+                    <h3 className="text-sm font-medium text-card-foreground">Histórico</h3>
                   </div>
                   <ScrollArea className="max-h-[300px]">
                     <div className="space-y-2">
@@ -239,8 +239,8 @@ const MapaMental = () => {
                         >
                           <div className="flex items-start justify-between gap-2">
                             <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium truncate">{map.topic}</p>
-                              <p className="text-xs text-muted-foreground">
+                              <p className="text-sm font-medium truncate text-card-foreground">{map.topic}</p>
+                              <p className="text-xs text-card-foreground/70">
                                 {map.nodes.length} itens • {map.createdAt.toLocaleDateString('pt-BR')}
                               </p>
                             </div>

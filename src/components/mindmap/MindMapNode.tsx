@@ -36,31 +36,31 @@ const typeConfig = {
   },
   methodology: {
     icon: BookOpen,
-    color: 'bg-blue-500/20 text-blue-400',
+    color: 'bg-blue-500/20 text-blue-700 dark:text-blue-300',
     borderColor: 'border-blue-500/50',
     label: 'Metodologia'
   },
   tpu: {
     icon: FileText,
-    color: 'bg-green-500/20 text-green-400',
+    color: 'bg-green-500/20 text-green-700 dark:text-green-300',
     borderColor: 'border-green-500/50',
     label: 'TPU/SINAPI'
   },
   attention: {
     icon: AlertTriangle,
-    color: 'bg-amber-500/20 text-amber-400',
+    color: 'bg-amber-500/20 text-amber-700 dark:text-amber-300',
     borderColor: 'border-amber-500/50',
     label: 'Atenção'
   },
   calculation: {
     icon: Calculator,
-    color: 'bg-purple-500/20 text-purple-400',
+    color: 'bg-purple-500/20 text-purple-700 dark:text-purple-300',
     borderColor: 'border-purple-500/50',
     label: 'Cálculo'
   },
   custom: {
     icon: Sparkles,
-    color: 'bg-muted text-muted-foreground',
+    color: 'bg-muted text-card-foreground',
     borderColor: 'border-border',
     label: 'Personalizado'
   }
@@ -168,7 +168,7 @@ export const MindMapNodeComponent = ({
             ) : (
               <>
                 <div className="flex items-center gap-2">
-                  <h4 className="font-medium text-sm">{node.title}</h4>
+                  <h4 className="font-medium text-sm text-card-foreground">{node.title}</h4>
                   <span className={cn(
                     "text-[10px] px-1.5 py-0.5 rounded-full",
                     config.color
@@ -177,7 +177,7 @@ export const MindMapNodeComponent = ({
                   </span>
                 </div>
                 {node.description && (
-                  <p className="text-xs text-muted-foreground mt-1">
+                  <p className="text-xs text-card-foreground/70 mt-1">
                     {node.description}
                   </p>
                 )}

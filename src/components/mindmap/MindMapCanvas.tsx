@@ -132,8 +132,8 @@ export const MindMapCanvas = ({ data, onDataChange, isGenerating }: MindMapCanva
               <Brain className="h-12 w-12 text-primary animate-pulse" />
             </div>
           </div>
-          <h3 className="text-lg font-semibold mb-2">Gerando Mapa Mental com IA</h3>
-          <p className="text-sm text-muted-foreground">
+          <h3 className="text-lg font-semibold mb-2 text-card-foreground">Gerando Mapa Mental com IA</h3>
+          <p className="text-sm text-card-foreground/70">
             Analisando o serviço e criando estrutura de medição...
           </p>
         </CardContent>
@@ -148,12 +148,12 @@ export const MindMapCanvas = ({ data, onDataChange, isGenerating }: MindMapCanva
           <div className="bg-muted/50 rounded-full p-6 mb-4 mx-auto w-fit">
             <Lightbulb className="h-12 w-12 text-muted-foreground" />
           </div>
-          <h3 className="text-lg font-semibold mb-2">Comece seu Mapa Mental</h3>
-          <p className="text-sm text-muted-foreground mb-4">
+          <h3 className="text-lg font-semibold mb-2 text-card-foreground">Comece seu Mapa Mental</h3>
+          <p className="text-sm text-card-foreground/70 mb-4">
             Digite um serviço de engenharia na barra acima e clique em "Gerar com IA" 
             para criar automaticamente um mapa de medição.
           </p>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-card-foreground/60">
             Exemplos: "Revestimento cerâmico", "Pintura externa", "Alvenaria estrutural"
           </p>
         </CardContent>
@@ -181,8 +181,8 @@ export const MindMapCanvas = ({ data, onDataChange, isGenerating }: MindMapCanva
               <Brain className="h-6 w-6 text-primary-foreground" />
             </div>
             <div>
-              <h2 className="text-xl font-bold">{data.topic}</h2>
-              <p className="text-sm text-muted-foreground">
+              <h2 className="text-xl font-bold text-card-foreground">{data.topic}</h2>
+              <p className="text-sm text-card-foreground/70">
                 {data.nodes.length} itens no mapa • Criado em {data.createdAt.toLocaleDateString('pt-BR')}
               </p>
             </div>
@@ -216,8 +216,8 @@ export const MindMapCanvas = ({ data, onDataChange, isGenerating }: MindMapCanva
         {groupedNodes.methodology.length > 0 && (
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm flex items-center gap-2">
-                <div className="bg-blue-500/20 text-blue-400 rounded-lg p-1.5">
+              <CardTitle className="text-sm flex items-center gap-2 text-card-foreground">
+                <div className="bg-blue-500/20 text-blue-700 dark:text-blue-300 rounded-lg p-1.5">
                   <Sparkles className="h-4 w-4" />
                 </div>
                 Metodologia de Medição
@@ -247,8 +247,8 @@ export const MindMapCanvas = ({ data, onDataChange, isGenerating }: MindMapCanva
         {groupedNodes.tpu.length > 0 && (
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm flex items-center gap-2">
-                <div className="bg-green-500/20 text-green-400 rounded-lg p-1.5">
+              <CardTitle className="text-sm flex items-center gap-2 text-card-foreground">
+                <div className="bg-green-500/20 text-green-700 dark:text-green-300 rounded-lg p-1.5">
                   <Sparkles className="h-4 w-4" />
                 </div>
                 Códigos TPU/SINAPI
@@ -278,8 +278,8 @@ export const MindMapCanvas = ({ data, onDataChange, isGenerating }: MindMapCanva
         {groupedNodes.attention.length > 0 && (
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm flex items-center gap-2">
-                <div className="bg-amber-500/20 text-amber-400 rounded-lg p-1.5">
+              <CardTitle className="text-sm flex items-center gap-2 text-card-foreground">
+                <div className="bg-amber-500/20 text-amber-700 dark:text-amber-300 rounded-lg p-1.5">
                   <Sparkles className="h-4 w-4" />
                 </div>
                 Pontos de Atenção
@@ -309,8 +309,8 @@ export const MindMapCanvas = ({ data, onDataChange, isGenerating }: MindMapCanva
         {groupedNodes.calculation.length > 0 && (
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm flex items-center gap-2">
-                <div className="bg-purple-500/20 text-purple-400 rounded-lg p-1.5">
+              <CardTitle className="text-sm flex items-center gap-2 text-card-foreground">
+                <div className="bg-purple-500/20 text-purple-700 dark:text-purple-300 rounded-lg p-1.5">
                   <Sparkles className="h-4 w-4" />
                 </div>
                 Memória de Cálculo
@@ -340,7 +340,7 @@ export const MindMapCanvas = ({ data, onDataChange, isGenerating }: MindMapCanva
         {groupedNodes.custom.length > 0 && (
           <Card className="lg:col-span-2">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm flex items-center gap-2">
+              <CardTitle className="text-sm flex items-center gap-2 text-card-foreground">
                 Itens Personalizados
                 <Badge variant="outline" className="ml-auto">
                   {groupedNodes.custom.length}

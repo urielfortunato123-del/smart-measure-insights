@@ -139,9 +139,9 @@ export const ExcelSpreadsheet = ({ headers, data, errors, onDataChange }: ExcelS
           border-color: hsl(var(--border)) !important;
         }
         .excel-spreadsheet-container .jexcel tbody td {
-          background: hsl(var(--card)) !important;
-          color: hsl(var(--foreground)) !important;
-          border-color: hsl(var(--border) / 0.5) !important;
+          background: #ffffff !important;
+          color: #1a1a1a !important;
+          border-color: #e5e7eb !important;
         }
         .excel-spreadsheet-container .jexcel tbody td:hover {
           background: hsl(var(--muted)) !important;

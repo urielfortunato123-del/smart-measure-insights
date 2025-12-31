@@ -8,6 +8,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { MeasurementEntry, FilterState } from '@/types/measurement';
 import { TPUEntry } from '@/types/tpu';
+import logo from '@/assets/logo.png';
 
 interface DashboardSidebarProps {
   onDataLoaded: (data: MeasurementEntry[]) => void;
@@ -41,9 +42,11 @@ export const DashboardSidebar = ({
     <aside className="w-full h-full border-r border-border bg-sidebar flex flex-col overflow-hidden">
       <div className="p-3 border-b border-border bg-sidebar sticky top-0 z-10 shrink-0">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
-            <span className="text-sm font-bold text-primary">EI</span>
-          </div>
+          <img 
+            src={logo} 
+            alt="Engenharia Inteligente" 
+            className="w-10 h-10 object-contain"
+          />
           <div>
             <h1 className="text-sm font-semibold text-foreground">Eng. Inteligente</h1>
             <p className="text-xs text-muted-foreground">Medições</p>

@@ -8,8 +8,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, Building2, Mail, Lock, ArrowLeft } from 'lucide-react';
+import { Loader2, Mail, Lock, ArrowLeft } from 'lucide-react';
 import { z } from 'zod';
+import logo from '@/assets/logo.png';
 
 const emailSchema = z.string().email('Email inválido');
 const passwordSchema = z.string().min(6, 'Senha deve ter pelo menos 6 caracteres');
@@ -137,11 +138,12 @@ const Auth = () => {
         <div className="w-full max-w-md">
           {/* Logo/Header */}
           <div className="text-center mb-8">
-            <div className="w-16 h-16 rounded-xl bg-primary/20 flex items-center justify-center mx-auto mb-4">
-              <Building2 className="h-8 w-8 text-primary" />
-            </div>
-            <h1 className="text-2xl font-bold text-foreground">Engenharia Inteligente</h1>
-            <p className="text-muted-foreground mt-2">Recuperar Senha</p>
+            <img 
+              src={logo} 
+              alt="Engenharia Inteligente" 
+              className="w-24 h-24 mx-auto mb-4 object-contain"
+            />
+            <p className="text-muted-foreground">Recuperar Senha</p>
           </div>
 
           <Card className="border-border">
@@ -205,11 +207,11 @@ const Auth = () => {
       <div className="w-full max-w-md">
         {/* Logo/Header */}
         <div className="text-center mb-8">
-          <div className="w-16 h-16 rounded-xl bg-primary/20 flex items-center justify-center mx-auto mb-4">
-            <Building2 className="h-8 w-8 text-primary" />
-          </div>
-          <h1 className="text-2xl font-bold text-foreground">Engenharia Inteligente</h1>
-          <p className="text-muted-foreground mt-2">Dashboard de Medições com IA</p>
+          <img 
+            src={logo} 
+            alt="Engenharia Inteligente" 
+            className="w-32 h-32 mx-auto mb-4 object-contain"
+          />
         </div>
 
         <Card className="border-border">

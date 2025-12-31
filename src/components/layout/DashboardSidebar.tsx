@@ -38,21 +38,21 @@ export const DashboardSidebar = ({
   };
 
   return (
-    <aside className="w-80 min-w-[320px] border-r border-border bg-sidebar shrink-0 flex flex-col h-screen overflow-hidden">
-      <div className="p-4 border-b border-border bg-sidebar sticky top-0 z-10 shrink-0">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
-            <span className="text-lg font-bold text-primary">EI</span>
+    <aside className="w-64 min-w-[256px] border-r border-border bg-sidebar shrink-0 flex flex-col h-screen overflow-hidden">
+      <div className="p-3 border-b border-border bg-sidebar sticky top-0 z-10 shrink-0">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
+            <span className="text-sm font-bold text-primary">EI</span>
           </div>
           <div>
-            <h1 className="text-base font-semibold text-foreground">Engenharia Inteligente</h1>
-            <p className="text-xs text-muted-foreground">Dashboard de Medições</p>
+            <h1 className="text-sm font-semibold text-foreground">Eng. Inteligente</h1>
+            <p className="text-xs text-muted-foreground">Medições</p>
           </div>
         </div>
       </div>
       
       <ScrollArea className="flex-1 overflow-x-hidden">
-        <div className="p-4 space-y-4 overflow-hidden">
+        <div className="p-3 space-y-3 overflow-hidden">
           <FileUpload onDataLoaded={onDataLoaded} />
           
           <Separator />

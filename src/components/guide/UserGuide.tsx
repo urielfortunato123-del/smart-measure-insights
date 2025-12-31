@@ -467,7 +467,7 @@ export const UserGuide = ({ open, onOpenChange }: UserGuideProps) => {
                     className={`w-full text-left p-3 rounded-lg transition-colors flex items-center gap-3 ${
                       selectedSection === section.id
                         ? 'bg-primary/20 text-primary'
-                        : 'hover:bg-muted text-foreground'
+                        : 'text-card-foreground hover:bg-muted'
                     }`}
                   >
                     <div className={`${selectedSection === section.id ? 'text-primary' : 'text-muted-foreground'}`}>

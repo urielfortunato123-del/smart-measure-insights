@@ -2,3 +2,6 @@ project_id = "sasmdprhssunrwxfkrtt"
 
 [functions.analyze-measurement]
 verify_jwt = false
+
+[functions.analyze-spreadsheet]
+verify_jwt = false

@@ -67,8 +67,8 @@ export const ComparisonResults = ({ result, onClose }: ComparisonResultsProps) =
     <div className="space-y-6">
       {/* Filter Modal */}
       <Dialog open={filterModal !== null} onOpenChange={(open) => !open && setFilterModal(null)}>
-        <DialogContent className="max-w-4xl max-h-[85vh] flex flex-col p-0 gap-0">
-          <DialogHeader className="shrink-0 p-6 pb-4">
+        <DialogContent className="max-w-4xl h-[85vh] flex flex-col p-0 gap-0">
+          <DialogHeader className="shrink-0 p-6 pb-4 border-b">
             <DialogTitle className="flex items-center gap-3">
               {filterModal && (() => {
                 const style = getFilterStyle(filterModal);
@@ -85,41 +85,37 @@ export const ComparisonResults = ({ result, onClose }: ComparisonResultsProps) =
               })()}
             </DialogTitle>
           </DialogHeader>
-          <div className="flex-1 min-h-0 overflow-hidden">
-            <ScrollArea className="h-full max-h-[calc(85vh-100px)]">
-              <div className="px-6 pb-6">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-[120px]">Código</TableHead>
-                      <TableHead>Descrição</TableHead>
-                      <TableHead className="w-[60px]">Un</TableHead>
-                      <TableHead className="text-right w-[120px]">Valor Base</TableHead>
-                      <TableHead className="text-right w-[120px]">Valor Atual</TableHead>
-                      <TableHead className="text-right w-[100px]">Variação</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredItems.map((item, idx) => (
-                      <TableRow key={idx}>
-                        <TableCell className="font-mono text-xs">{item.codigo}</TableCell>
-                        <TableCell className="text-sm">{item.descricao}</TableCell>
-                        <TableCell className="text-xs text-muted-foreground">{item.unidade || '-'}</TableCell>
-                        <TableCell className="text-right text-sm">
-                          {item.valorBase !== undefined ? formatCurrency(item.valorBase) : '-'}
-                        </TableCell>
-                        <TableCell className="text-right text-sm">
-                          {item.valorComparacao !== undefined ? formatCurrency(item.valorComparacao) : '-'}
-                        </TableCell>
-                        <TableCell className={`text-right font-medium ${getVariationColor(item.variacaoPreco || item.variacaoTotal)}`}>
-                          {formatVariation(item.variacaoPreco || item.variacaoTotal)}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            </ScrollArea>
+          <div className="flex-1 min-h-0 overflow-auto">
+            <Table>
+              <TableHeader className="sticky top-0 bg-background z-10">
+                <TableRow>
+                  <TableHead className="w-[120px]">Código</TableHead>
+                  <TableHead>Descrição</TableHead>
+                  <TableHead className="w-[60px]">Un</TableHead>
+                  <TableHead className="text-right w-[120px]">Valor Base</TableHead>
+                  <TableHead className="text-right w-[120px]">Valor Atual</TableHead>
+                  <TableHead className="text-right w-[100px]">Variação</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredItems.map((item, idx) => (
+                  <TableRow key={idx}>
+                    <TableCell className="font-mono text-xs">{item.codigo}</TableCell>
+                    <TableCell className="text-sm">{item.descricao}</TableCell>
+                    <TableCell className="text-xs text-muted-foreground">{item.unidade || '-'}</TableCell>
+                    <TableCell className="text-right text-sm">
+                      {item.valorBase !== undefined ? formatCurrency(item.valorBase) : '-'}
+                    </TableCell>
+                    <TableCell className="text-right text-sm">
+                      {item.valorComparacao !== undefined ? formatCurrency(item.valorComparacao) : '-'}
+                    </TableCell>
+                    <TableCell className={`text-right font-medium ${getVariationColor(item.variacaoPreco || item.variacaoTotal)}`}>
+                      {formatVariation(item.variacaoPreco || item.variacaoTotal)}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           </div>
         </DialogContent>
       </Dialog>

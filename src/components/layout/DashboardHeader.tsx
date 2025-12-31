@@ -8,6 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { toPng } from 'html-to-image';
 import { LayoutControls } from './LayoutControls';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -101,70 +102,116 @@ export const DashboardHeader = ({ lastUpdate, onRefresh }: DashboardHeaderProps)
         </Badge>
       </div>
       
-      <div className="flex items-center gap-1 flex-wrap justify-end">
-        <LayoutControls />
-        
-        <div className="h-6 w-px bg-border mx-1 hidden lg:block" />
-        
-        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setGuideOpen(true)} title="Manual do Usuário">
-          <BookOpen className="h-4 w-4" />
-        </Button>
-        
-        <Button variant="outline" size="sm" className="h-8 px-2" onClick={() => navigate('/analise')}>
-          <Sparkles className="h-4 w-4" />
-          <span className="hidden xl:inline ml-1">Análise IA</span>
-        </Button>
-        <Button variant="outline" size="sm" className="h-8 px-2" onClick={() => navigate('/comparar')}>
-          <GitCompareArrows className="h-4 w-4" />
-          <span className="hidden xl:inline ml-1">Comparar</span>
-        </Button>
-        <Button variant="outline" size="sm" className="h-8 px-2" onClick={() => navigate('/mapa-mental')}>
-          <Brain className="h-4 w-4" />
-          <span className="hidden xl:inline ml-1">Mapa Mental</span>
-        </Button>
-        <Button variant="outline" size="icon" className="h-8 w-8" onClick={onRefresh}>
-          <RefreshCw className="h-4 w-4" />
-        </Button>
-        <Button 
-          variant="outline" 
-          size="icon"
-          className="h-8 w-8"
-          onClick={handleExportDashboard}
-          disabled={isExporting}
-        >
-          {isExporting ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <Image className="h-4 w-4" />
-          )}
-        </Button>
-        
-        {user ? (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="h-8 px-2">
-                <User className="h-4 w-4" />
-                <span className="hidden lg:inline ml-1 max-w-[80px] truncate">{user.email?.split('@')[0]}</span>
+      <TooltipProvider delayDuration={300}>
+        <div className="flex items-center gap-1 flex-wrap justify-end">
+          <LayoutControls />
+          
+          <div className="h-6 w-px bg-border mx-1 hidden lg:block" />
+          
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setGuideOpen(true)}>
+                <BookOpen className="h-4 w-4" />
               </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem className="text-xs text-muted-foreground">
-                {user.email}
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleLogout}>
-                <LogOut className="h-4 w-4 mr-2" />
-                Sair
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        ) : (
-          <Button variant="outline" size="sm" className="h-8 px-2" onClick={() => navigate('/auth')}>
-            <User className="h-4 w-4" />
-            <span className="hidden lg:inline ml-1">Entrar</span>
-          </Button>
-        )}
-      </div>
+            </TooltipTrigger>
+            <TooltipContent>Manual do Usuário</TooltipContent>
+          </Tooltip>
+          
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="outline" size="sm" className="h-8 px-2" onClick={() => navigate('/analise')}>
+                <Sparkles className="h-4 w-4" />
+                <span className="hidden xl:inline ml-1">Análise IA</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Análise Inteligente de Planilhas</TooltipContent>
+          </Tooltip>
+          
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="outline" size="sm" className="h-8 px-2" onClick={() => navigate('/comparar')}>
+                <GitCompareArrows className="h-4 w-4" />
+                <span className="hidden xl:inline ml-1">Comparar</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Comparar Arquivos</TooltipContent>
+          </Tooltip>
+          
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="outline" size="sm" className="h-8 px-2" onClick={() => navigate('/mapa-mental')}>
+                <Brain className="h-4 w-4" />
+                <span className="hidden xl:inline ml-1">Mapa Mental</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Gerar Mapa Mental com IA</TooltipContent>
+          </Tooltip>
+          
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="outline" size="icon" className="h-8 w-8" onClick={onRefresh}>
+                <RefreshCw className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Atualizar Dados</TooltipContent>
+          </Tooltip>
+          
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button 
+                variant="outline" 
+                size="icon"
+                className="h-8 w-8"
+                onClick={handleExportDashboard}
+                disabled={isExporting}
+              >
+                {isExporting ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Image className="h-4 w-4" />
+                )}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Exportar Dashboard como Imagem</TooltipContent>
+          </Tooltip>
+          
+          {user ? (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm" className="h-8 px-2">
+                      <User className="h-4 w-4" />
+                      <span className="hidden lg:inline ml-1 max-w-[80px] truncate">{user.email?.split('@')[0]}</span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem className="text-xs text-muted-foreground">
+                      {user.email}
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleLogout}>
+                      <LogOut className="h-4 w-4 mr-2" />
+                      Sair
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </TooltipTrigger>
+              <TooltipContent>Minha Conta</TooltipContent>
+            </Tooltip>
+          ) : (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="outline" size="sm" className="h-8 px-2" onClick={() => navigate('/auth')}>
+                  <User className="h-4 w-4" />
+                  <span className="hidden lg:inline ml-1">Entrar</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Entrar na Conta</TooltipContent>
+            </Tooltip>
+          )}
+        </div>
+      </TooltipProvider>
 
       {/* User Guide Modal */}
       <UserGuide open={guideOpen} onOpenChange={setGuideOpen} />

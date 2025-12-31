@@ -213,9 +213,8 @@ Seja objetivo e técnico.`
           </DialogTitle>
         </DialogHeader>
 
-        <div className="flex-1 min-h-0 overflow-hidden">
-          <ScrollArea className="h-full max-h-[calc(85vh-120px)] px-6">
-            <div className="space-y-6 pb-6">
+        <div className="flex-1 min-h-0 overflow-auto px-6">
+          <div className="space-y-6 pb-6">
           {/* Alert Details */}
           <div className={cn('p-4 rounded-lg border', styles.border, styles.bg)}>
             <h4 className="text-sm font-semibold mb-2 flex items-center gap-2">
@@ -338,8 +337,7 @@ Seja objetivo e técnico.`
               </Button>
             )}
           </div>
-            </div>
-          </ScrollArea>
+          </div>
         </div>
       </DialogContent>
     </Dialog>

@@ -307,7 +307,7 @@ Seja objetivo e técnico.`
 
           {/* AI Analysis */}
           <div className="p-4 rounded-lg border border-primary/20 bg-primary/5">
-            <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
+            <h4 className="text-sm font-semibold mb-3 flex items-center gap-2 text-card-foreground">
               <Sparkles className="h-4 w-4 text-primary" />
               Análise e Recomendações da IA
             </h4>
@@ -315,11 +315,11 @@ Seja objetivo e técnico.`
             {isAnalyzing ? (
               <div className="flex items-center gap-3 py-4">
                 <Loader2 className="h-5 w-5 animate-spin text-primary" />
-                <span className="text-sm text-muted-foreground">Analisando dados...</span>
+                <span className="text-sm text-card-foreground/70">Analisando dados...</span>
               </div>
             ) : (
               <ScrollArea className="max-h-[250px]">
-                <div className="text-sm text-foreground whitespace-pre-wrap leading-relaxed pr-4">
+                <div className="text-sm text-card-foreground whitespace-pre-wrap leading-relaxed pr-4">
                   {aiAnalysis || 'Clique em "Analisar Novamente" para obter recomendações da IA.'}
                 </div>
               </ScrollArea>
@@ -327,7 +327,7 @@ Seja objetivo e técnico.`
             
             {!isAnalyzing && (
               <Button 
-                variant="outline" 
+                variant="secondary" 
                 size="sm" 
                 className="mt-4"
                 onClick={analyzeWithAI}

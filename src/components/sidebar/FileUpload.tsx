@@ -340,9 +340,9 @@ export const FileUpload = ({ onDataLoaded }: FileUploadProps) => {
 
 
             {/* Actions */}
-            <div className="flex gap-2">
+            <div className="flex flex-col gap-2">
               <Button
-                className="flex-1"
+                className="w-full"
                 onClick={handleProcess}
                 disabled={isLoading || !selectedSheet}
               >
@@ -358,6 +358,7 @@ export const FileUpload = ({ onDataLoaded }: FileUploadProps) => {
 
               <Button
                 variant="outline"
+                className="w-full"
                 onClick={handleClear}
                 disabled={isLoading}
               >

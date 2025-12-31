@@ -182,15 +182,15 @@ export const QuickEntryForm = ({ onAddEntry, disciplines, locations, importedDat
         onExport={handleExportTab}
       />
       
-      <Card className="border-border">
-        <CardHeader className="pb-3">
+      <Card className="border-border max-w-[180px]">
+        <CardHeader className="pb-1 px-2 py-2">
           <CardTitle 
-            className="text-sm font-medium flex items-center gap-2 cursor-pointer"
+            className="text-xs font-medium flex items-center gap-1 cursor-pointer"
             onClick={() => setIsExpanded(!isExpanded)}
           >
-            <Zap className="h-4 w-4 text-primary" />
-            Lançamento Rápido
-            <span className="text-xs text-muted-foreground ml-auto">
+            <Zap className="h-3 w-3 text-primary" />
+            <span className="truncate">Lançamento Rápido</span>
+            <span className="text-[10px] text-muted-foreground ml-auto">
               {isExpanded ? '▲' : '▼'}
             </span>
           </CardTitle>

@@ -154,19 +154,19 @@ export const AIAssistant = ({ data }: AIAssistantProps) => {
   ];
 
   return (
-    <Card className="border-border flex flex-col h-[400px]">
-      <CardHeader className="pb-3 shrink-0">
-        <CardTitle className="text-sm font-medium flex items-center gap-2">
-          <Sparkles className="h-4 w-4 text-primary" />
-          Assistente IA
-          <span className="text-xs text-muted-foreground font-normal ml-auto">Gemini 2.5</span>
+    <Card className="border-border flex flex-col h-[300px] max-w-[180px]">
+      <CardHeader className="pb-1 px-2 py-2 shrink-0">
+        <CardTitle className="text-xs font-medium flex items-center gap-1">
+          <Sparkles className="h-3 w-3 text-primary" />
+          <span className="truncate">Assistente IA</span>
+          <span className="text-[10px] text-muted-foreground font-normal ml-auto">Gemini</span>
         </CardTitle>
       </CardHeader>
-      <CardContent className="flex flex-col flex-1 min-h-0 p-3 pt-0">
+      <CardContent className="flex flex-col flex-1 min-h-0 p-2 pt-0">
         {data.length === 0 && (
-          <div className="flex items-center gap-2 p-2 mb-2 bg-muted/50 rounded-lg text-xs text-muted-foreground">
-            <AlertCircle className="h-3.5 w-3.5" />
-            Carregue uma planilha para análise completa
+          <div className="flex items-center gap-1 p-1.5 mb-1 bg-muted/50 rounded-lg text-[10px] text-muted-foreground">
+            <AlertCircle className="h-3 w-3" />
+            <span className="truncate">Carregue uma planilha para análise completa</span>
           </div>
         )}
         
@@ -183,7 +183,7 @@ export const AIAssistant = ({ data }: AIAssistantProps) => {
                   </div>
                 )}
                 <div 
-                  className={`rounded-lg px-3 py-2 max-w-[85%] text-sm ${
+                  className={`rounded-lg px-2 py-1.5 max-w-[95%] text-[10px] ${
                     message.role === 'user' 
                       ? 'bg-primary text-primary-foreground' 
                       : 'bg-secondary/70'
@@ -233,24 +233,25 @@ export const AIAssistant = ({ data }: AIAssistantProps) => {
           </div>
         )}
 
-        <div className="flex gap-2 mt-3 shrink-0">
+        <div className="flex gap-1 mt-2 shrink-0">
           <Input
             placeholder="Pergunte algo..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyPress={handleKeyPress}
-            className="bg-secondary/50"
+            className="bg-secondary/50 text-[10px] h-7"
             disabled={isLoading}
           />
           <Button 
             size="icon" 
+            className="h-7 w-7"
             onClick={handleSend}
             disabled={!input.trim() || isLoading}
           >
             {isLoading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <Loader2 className="h-3 w-3 animate-spin" />
             ) : (
-              <Send className="h-4 w-4" />
+              <Send className="h-3 w-3" />
             )}
           </Button>
         </div>

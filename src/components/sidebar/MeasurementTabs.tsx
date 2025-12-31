@@ -66,21 +66,21 @@ export const MeasurementTabs = ({ tabs, onTabsChange, onExport }: MeasurementTab
 
   if (tabs.length === 0 && !isCreating) {
     return (
-      <Card className="border-border">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-sm font-medium flex items-center gap-2">
-            <Calendar className="h-4 w-4 text-primary" />
-            Abas de Medição
+      <Card className="border-border max-w-[180px]">
+        <CardHeader className="pb-1 px-2 py-2">
+          <CardTitle className="text-xs font-medium flex items-center gap-1">
+            <Calendar className="h-3 w-3 text-primary" />
+            <span className="truncate">Abas de Medição</span>
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-2 pb-2">
           <Button 
             variant="outline" 
-            className="w-full" 
+            className="w-full h-6 text-[10px]" 
             size="sm"
             onClick={() => setIsCreating(true)}
           >
-            <Plus className="h-4 w-4 mr-1" />
+            <Plus className="h-3 w-3 mr-1" />
             Criar Nova Medição
           </Button>
         </CardContent>
@@ -89,19 +89,19 @@ export const MeasurementTabs = ({ tabs, onTabsChange, onExport }: MeasurementTab
   }
 
   return (
-    <Card className="border-border">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-sm font-medium flex items-center justify-between">
-          <span className="flex items-center gap-2">
-            <Calendar className="h-4 w-4 text-primary" />
-            Abas de Medição
+    <Card className="border-border max-w-[180px]">
+      <CardHeader className="pb-1 px-2 py-2">
+        <CardTitle className="text-xs font-medium flex items-center justify-between">
+          <span className="flex items-center gap-1">
+            <Calendar className="h-3 w-3 text-primary" />
+            <span className="truncate">Abas de Medição</span>
           </span>
-          <Button variant="ghost" size="sm" onClick={() => setIsCreating(true)}>
-            <Plus className="h-4 w-4" />
+          <Button variant="ghost" size="sm" className="h-5 w-5 p-0" onClick={() => setIsCreating(true)}>
+            <Plus className="h-3 w-3" />
           </Button>
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-3">
+      <CardContent className="space-y-2 px-2 pb-2">
         {isCreating && (
           <div className="p-3 bg-secondary/30 rounded-lg space-y-2 border border-border">
             <div className="space-y-1.5">

@@ -60,11 +60,11 @@ export const FilterPanel = ({
     category: 'responsavel' | 'local' | 'disciplina';
     selected: string[];
   }) => (
-    <div className="space-y-2">
-      <Label className="text-xs text-muted-foreground uppercase tracking-wide">
+    <div className="space-y-1">
+      <Label className="text-[10px] text-muted-foreground uppercase tracking-wide">
         {title}
       </Label>
-      <ScrollArea className="h-24">
+      <ScrollArea className="h-16">
         <div className="space-y-2">
           {items.map(item => (
             <div key={item} className="flex items-center space-x-2">
@@ -77,7 +77,7 @@ export const FilterPanel = ({
               />
               <Label 
                 htmlFor={`${category}-${item}`}
-                className="text-sm font-normal cursor-pointer truncate"
+                className="text-[10px] font-normal cursor-pointer truncate"
               >
                 {item}
               </Label>
@@ -89,14 +89,14 @@ export const FilterPanel = ({
   );
 
   return (
-    <Card className="border-border">
-      <CardHeader className="pb-3">
+    <Card className="border-border max-w-[180px]">
+      <CardHeader className="pb-1 px-2 py-2">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-sm font-medium flex items-center gap-2">
-            <Filter className="h-4 w-4 text-primary" />
-            Filtros
+          <CardTitle className="text-xs font-medium flex items-center gap-1">
+            <Filter className="h-3 w-3 text-primary" />
+            <span className="truncate">Filtros</span>
             {activeFilterCount > 0 && (
-              <span className="px-1.5 py-0.5 text-xs bg-primary text-primary-foreground rounded-full">
+              <span className="px-1 py-0.5 text-[10px] bg-primary text-primary-foreground rounded-full">
                 {activeFilterCount}
               </span>
             )}
@@ -105,16 +105,16 @@ export const FilterPanel = ({
             <Button 
               variant="ghost" 
               size="sm" 
-              className="h-7 px-2 text-xs"
+              className="h-5 px-1 text-[10px]"
               onClick={handleReset}
             >
-              <RotateCcw className="h-3 w-3 mr-1" />
+              <RotateCcw className="h-2.5 w-2.5 mr-0.5" />
               Limpar
             </Button>
           )}
         </div>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-2 px-2 pb-2">
         <FilterSection 
           title="Responsável" 
           items={responsaveis} 

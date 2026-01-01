@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Download, RefreshCw, Calendar, Image, Loader2, LogOut, User, GitCompareArrows, Sparkles, BookOpen, Brain } from 'lucide-react';
 import { UserGuide } from '@/components/guide/UserGuide';
+import { AdminButton } from '@/components/admin/AdminButton';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { toPng } from 'html-to-image';
@@ -104,6 +105,8 @@ export const DashboardHeader = ({ lastUpdate, onRefresh }: DashboardHeaderProps)
       
       <TooltipProvider delayDuration={300}>
         <div className="flex items-center gap-1 flex-wrap justify-end">
+          <AdminButton />
+          
           <LayoutControls />
           
           <div className="h-6 w-px bg-border mx-1 hidden lg:block" />

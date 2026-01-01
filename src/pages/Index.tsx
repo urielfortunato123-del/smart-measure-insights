@@ -38,7 +38,7 @@ const Index = () => {
   const [selectedAlert, setSelectedAlert] = useState<Alert | null>(null);
   const [alertModalOpen, setAlertModalOpen] = useState(false);
   const { toast } = useToast();
-  const { isDemoMode, demoExpired, timeRemaining, formattedTime } = useDemoMode();
+  const { isDemoMode, demoExpired, timeRemaining, formattedTime, usesRemaining, maxWeeklyUses } = useDemoMode();
 
   const responsaveis = useMemo(() => getUniqueValues(data, 'responsavel'), [data]);
   const locais = useMemo(() => getUniqueValues(data, 'local'), [data]);
@@ -148,7 +148,7 @@ const Index = () => {
     <div className="flex min-h-screen w-full liquid-background">
       {/* Demo Mode Timer */}
       {isDemoMode && !demoExpired && (
-        <DemoTimer formattedTime={formattedTime} timeRemaining={timeRemaining} />
+        <DemoTimer formattedTime={formattedTime} timeRemaining={timeRemaining} usesRemaining={usesRemaining} maxWeeklyUses={maxWeeklyUses} />
       )}
       
       {/* Demo Expired Modal */}

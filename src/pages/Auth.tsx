@@ -12,6 +12,7 @@ import { Loader2, Mail, Lock, ArrowLeft, PlayCircle, Crown } from 'lucide-react'
 import { z } from 'zod';
 import logo from '@/assets/logo.png';
 import { useDemoMode } from '@/hooks/useDemoMode';
+import { cn } from '@/lib/utils';
 
 const emailSchema = z.string().email('Email inválido');
 const passwordSchema = z.string().min(6, 'Senha deve ter pelo menos 6 caracteres');
@@ -24,7 +25,7 @@ const Auth = () => {
   const { signIn, signUp } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { startDemo, demoExpired } = useDemoMode();
+  const { startDemo, demoExpired, usesRemaining, weeklyLimitReached, maxWeeklyUses } = useDemoMode();
 
   const validateEmail = () => {
     try {
@@ -135,10 +136,10 @@ const Auth = () => {
   };
 
   const handleStartDemo = () => {
-    if (demoExpired) {
+    if (weeklyLimitReached) {
       toast({
-        title: 'Período de degustação esgotado',
-        description: 'Seu período de teste já foi utilizado. Assine um plano para continuar.',
+        title: 'Limite semanal atingido',
+        description: `Você já usou suas ${maxWeeklyUses} degustações desta semana. Assine um plano para acesso ilimitado!`,
         variant: 'destructive'
       });
       navigate('/precos');
@@ -149,7 +150,7 @@ const Auth = () => {
     if (started) {
       toast({
         title: 'Modo Degustação Ativado!',
-        description: 'Você tem 3 minutos para explorar o sistema.'
+        description: `Você tem 3 minutos para explorar. Restam ${usesRemaining - 1} usos esta semana.`
       });
       navigate('/');
     }
@@ -356,14 +357,29 @@ const Auth = () => {
 
             {/* Demo and Pricing buttons */}
             <div className="mt-6 pt-6 border-t border-border/50 space-y-3">
-              <Button 
-                variant="outline" 
-                className="w-full gap-2 bg-amber-500/10 border-amber-500/30 text-amber-600 hover:bg-amber-500/20 hover:text-amber-700"
-                onClick={handleStartDemo}
-              >
-                <PlayCircle className="h-4 w-4" />
-                Experimentar Grátis (3 min)
-              </Button>
+              <div className="space-y-2">
+                <Button 
+                  variant="outline" 
+                  className={cn(
+                    "w-full gap-2",
+                    weeklyLimitReached 
+                      ? "bg-muted/50 border-muted text-muted-foreground cursor-not-allowed"
+                      : "bg-amber-500/10 border-amber-500/30 text-amber-600 hover:bg-amber-500/20 hover:text-amber-700"
+                  )}
+                  onClick={handleStartDemo}
+                  disabled={weeklyLimitReached}
+                >
+                  <PlayCircle className="h-4 w-4" />
+                  {weeklyLimitReached 
+                    ? 'Limite semanal atingido' 
+                    : 'Experimentar Grátis (3 min)'}
+                </Button>
+                <p className="text-xs text-center text-muted-foreground">
+                  {weeklyLimitReached 
+                    ? 'Suas 3 degustações semanais foram usadas' 
+                    : `${usesRemaining} de ${maxWeeklyUses} degustações disponíveis esta semana`}
+                </p>
+              </div>
               
               <Button 
                 variant="ghost" 

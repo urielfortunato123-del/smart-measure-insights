@@ -8,9 +8,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, Mail, Lock, ArrowLeft } from 'lucide-react';
+import { Loader2, Mail, Lock, ArrowLeft, PlayCircle, Crown } from 'lucide-react';
 import { z } from 'zod';
 import logo from '@/assets/logo.png';
+import { useDemoMode } from '@/hooks/useDemoMode';
 
 const emailSchema = z.string().email('Email inválido');
 const passwordSchema = z.string().min(6, 'Senha deve ter pelo menos 6 caracteres');
@@ -23,6 +24,7 @@ const Auth = () => {
   const { signIn, signUp } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { startDemo, demoExpired } = useDemoMode();
 
   const validateEmail = () => {
     try {
@@ -129,6 +131,27 @@ const Auth = () => {
         description: 'Verifique sua caixa de entrada para redefinir a senha.'
       });
       setShowForgotPassword(false);
+    }
+  };
+
+  const handleStartDemo = () => {
+    if (demoExpired) {
+      toast({
+        title: 'Período de degustação esgotado',
+        description: 'Seu período de teste já foi utilizado. Assine um plano para continuar.',
+        variant: 'destructive'
+      });
+      navigate('/precos');
+      return;
+    }
+    
+    const started = startDemo();
+    if (started) {
+      toast({
+        title: 'Modo Degustação Ativado!',
+        description: 'Você tem 3 minutos para explorar o sistema.'
+      });
+      navigate('/');
     }
   };
 
@@ -330,6 +353,27 @@ const Auth = () => {
                 </form>
               </TabsContent>
             </Tabs>
+
+            {/* Demo and Pricing buttons */}
+            <div className="mt-6 pt-6 border-t border-border/50 space-y-3">
+              <Button 
+                variant="outline" 
+                className="w-full gap-2 bg-amber-500/10 border-amber-500/30 text-amber-600 hover:bg-amber-500/20 hover:text-amber-700"
+                onClick={handleStartDemo}
+              >
+                <PlayCircle className="h-4 w-4" />
+                Experimentar Grátis (3 min)
+              </Button>
+              
+              <Button 
+                variant="ghost" 
+                className="w-full gap-2"
+                onClick={() => navigate('/precos')}
+              >
+                <Crown className="h-4 w-4" />
+                Ver Planos e Preços
+              </Button>
+            </div>
           </CardContent>
         </Card>
 

@@ -10,6 +10,8 @@ import { SmartDataTable } from '@/components/dashboard/SmartDataTable';
 import { AlertsPanel } from '@/components/dashboard/AlertsPanel';
 import { AlertDetailModal } from '@/components/dashboard/AlertDetailModal';
 import { UpdatesNotification } from '@/components/updates/UpdatesNotification';
+import { DemoTimer } from '@/components/demo/DemoTimer';
+import { DemoExpiredModal } from '@/components/demo/DemoExpiredModal';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { getUniqueValues, demoMeasurements } from '@/data/sampleData';
@@ -19,6 +21,7 @@ import { useLayout } from '@/contexts/LayoutContext';
 import { Ruler, DollarSign, FileText, AlertTriangle, Play, Sparkles } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
+import { useDemoMode } from '@/hooks/useDemoMode';
 
 const Index = () => {
   const { user, loading } = useAuth();
@@ -35,6 +38,7 @@ const Index = () => {
   const [selectedAlert, setSelectedAlert] = useState<Alert | null>(null);
   const [alertModalOpen, setAlertModalOpen] = useState(false);
   const { toast } = useToast();
+  const { isDemoMode, demoExpired, timeRemaining, formattedTime } = useDemoMode();
 
   const responsaveis = useMemo(() => getUniqueValues(data, 'responsavel'), [data]);
   const locais = useMemo(() => getUniqueValues(data, 'local'), [data]);
@@ -94,12 +98,12 @@ const Index = () => {
     );
   }, [selectedAlert, filteredData]);
 
-  // Redirect to auth if not logged in
+  // Redirect to auth if not logged in AND not in demo mode
   useEffect(() => {
-    if (!loading && !user) {
+    if (!loading && !user && !isDemoMode && !demoExpired) {
       navigate('/auth');
     }
-  }, [user, loading, navigate]);
+  }, [user, loading, navigate, isDemoMode, demoExpired]);
 
   // Show loading while checking auth
   if (loading) {
@@ -113,8 +117,8 @@ const Index = () => {
     );
   }
 
-  // Don't render dashboard if not authenticated
-  if (!user) {
+  // Don't render dashboard if not authenticated and not in demo mode
+  if (!user && !isDemoMode) {
     return null;
   }
 
@@ -142,6 +146,13 @@ const Index = () => {
 
   return (
     <div className="flex min-h-screen w-full liquid-background">
+      {/* Demo Mode Timer */}
+      {isDemoMode && !demoExpired && (
+        <DemoTimer formattedTime={formattedTime} timeRemaining={timeRemaining} />
+      )}
+      
+      {/* Demo Expired Modal */}
+      <DemoExpiredModal open={demoExpired && !user} />
       <ResizablePanelGroup 
         direction={isHorizontal ? 'horizontal' : 'vertical'} 
         className="min-h-screen"

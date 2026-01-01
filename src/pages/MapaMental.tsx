@@ -177,55 +177,55 @@ const MapaMental = () => {
       <div className="container py-6">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Sidebar - Input and History */}
-          <div className="lg:col-span-1 space-y-4">
-            {/* Input Card */}
-            <Card>
-              <CardContent className="p-4 space-y-4">
-                <div>
-                  <label className="text-sm font-medium mb-2 block text-card-foreground">
-                    Serviço de Engenharia
-                  </label>
-                  <Input
-                    value={topic}
-                    onChange={(e) => setTopic(e.target.value)}
-                    placeholder="Ex: Revestimento cerâmico"
-                    onKeyDown={(e) => e.key === 'Enter' && generateMindMap()}
-                  />
-                </div>
-                
-                <Button 
-                  className="w-full gap-2" 
-                  onClick={generateMindMap}
-                  disabled={isGenerating || !topic.trim()}
-                >
-                  {isGenerating ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      Gerando...
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="h-4 w-4" />
-                      Gerar com IA
-                    </>
-                  )}
-                </Button>
-
-                <p className="text-xs text-card-foreground/70 text-center">
-                  A IA criará metodologia, códigos TPU, pontos de atenção e fórmulas de cálculo.
-                </p>
-              </CardContent>
-            </Card>
-
-            {/* History */}
-            {history.length > 0 && (
+          <ScrollArea className="lg:col-span-1 h-[calc(100vh-8rem)]">
+            <div className="space-y-4 pr-3">
+              {/* Input Card */}
               <Card>
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-2 mb-3">
-                    <History className="h-4 w-4 text-card-foreground/70" />
-                    <h3 className="text-sm font-medium text-card-foreground">Histórico</h3>
+                <CardContent className="p-4 space-y-4">
+                  <div>
+                    <label className="text-sm font-medium mb-2 block text-card-foreground">
+                      Serviço de Engenharia
+                    </label>
+                    <Input
+                      value={topic}
+                      onChange={(e) => setTopic(e.target.value)}
+                      placeholder="Ex: Revestimento cerâmico"
+                      onKeyDown={(e) => e.key === 'Enter' && generateMindMap()}
+                    />
                   </div>
-                  <ScrollArea className="max-h-[300px]">
+                  
+                  <Button 
+                    className="w-full gap-2" 
+                    onClick={generateMindMap}
+                    disabled={isGenerating || !topic.trim()}
+                  >
+                    {isGenerating ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Gerando...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="h-4 w-4" />
+                        Gerar com IA
+                      </>
+                    )}
+                  </Button>
+
+                  <p className="text-xs text-card-foreground/70 text-center">
+                    A IA criará metodologia, códigos TPU, pontos de atenção e fórmulas de cálculo.
+                  </p>
+                </CardContent>
+              </Card>
+
+              {/* History */}
+              {history.length > 0 && (
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <History className="h-4 w-4 text-card-foreground/70" />
+                      <h3 className="text-sm font-medium text-card-foreground">Histórico</h3>
+                    </div>
                     <div className="space-y-2">
                       {history.map((map) => (
                         <div 
@@ -259,11 +259,11 @@ const MapaMental = () => {
                         </div>
                       ))}
                     </div>
-                  </ScrollArea>
-                </CardContent>
-              </Card>
-            )}
-          </div>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          </ScrollArea>
 
           {/* Main Canvas */}
           <div className="lg:col-span-3">

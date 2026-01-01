@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ArrowLeft, Brain, Sparkles, Loader2, History, Trash2 } from 'lucide-react';
@@ -177,93 +177,101 @@ const MapaMental = () => {
       <div className="container py-6">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Sidebar - Input and History */}
-          <ScrollArea className="lg:col-span-1 h-[calc(100vh-8rem)]">
-            <div className="space-y-4 pr-3">
-              {/* Input Card */}
-              <Card>
-                <CardContent className="p-4 space-y-4">
-                  <div>
-                    <label className="text-sm font-medium mb-2 block text-card-foreground">
-                      Serviço de Engenharia
-                    </label>
-                    <Input
-                      value={topic}
-                      onChange={(e) => setTopic(e.target.value)}
-                      placeholder="Ex: Revestimento cerâmico"
-                      onKeyDown={(e) => e.key === 'Enter' && generateMindMap()}
-                    />
-                  </div>
-                  
-                  <Button 
-                    className="w-full gap-2" 
-                    onClick={generateMindMap}
-                    disabled={isGenerating || !topic.trim()}
-                  >
-                    {isGenerating ? (
-                      <>
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                        Gerando...
-                      </>
-                    ) : (
-                      <>
-                        <Sparkles className="h-4 w-4" />
-                        Gerar com IA
-                      </>
-                    )}
-                  </Button>
-
-                  <p className="text-xs text-card-foreground/70 text-center">
-                    A IA criará metodologia, códigos TPU, pontos de atenção e fórmulas de cálculo.
-                  </p>
-                </CardContent>
-              </Card>
-
-              {/* History */}
-              {history.length > 0 && (
-                <Card>
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-2 mb-3">
-                      <History className="h-4 w-4 text-card-foreground/70" />
-                      <h3 className="text-sm font-medium text-card-foreground">Histórico</h3>
+          <div className="lg:col-span-1 overflow-hidden">
+            <ScrollArea className="h-[calc(100vh-8rem)]">
+              <div className="space-y-4 pr-4">
+                {/* Input Card */}
+                <Card className="overflow-hidden">
+                  <CardContent className="p-4 space-y-4">
+                    <div className="w-full">
+                      <label className="text-sm font-medium mb-2 block text-card-foreground">
+                        Serviço de Engenharia
+                      </label>
+                      <Textarea
+                        value={topic}
+                        onChange={(e) => setTopic(e.target.value)}
+                        placeholder="Ex: Revestimento cerâmico"
+                        className="min-h-[60px] resize-none w-full"
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            generateMindMap();
+                          }
+                        }}
+                      />
                     </div>
-                    <div className="space-y-2">
-                      {history.map((map) => (
-                        <div 
-                          key={map.id}
-                          className={`group p-2 rounded-lg border cursor-pointer transition-colors ${
-                            currentMap?.id === map.id 
-                              ? 'bg-primary/10 border-primary/50' 
-                              : 'hover:bg-muted'
-                          }`}
-                          onClick={() => loadFromHistory(map)}
-                        >
-                          <div className="flex items-start justify-between gap-2">
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium truncate text-card-foreground">{map.topic}</p>
-                              <p className="text-xs text-card-foreground/70">
-                                {map.nodes.length} itens • {map.createdAt.toLocaleDateString('pt-BR')}
-                              </p>
-                            </div>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-6 w-6 opacity-0 group-hover:opacity-100 shrink-0"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                deleteFromHistory(map.id);
-                              }}
-                            >
-                              <Trash2 className="h-3 w-3" />
-                            </Button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
+                    
+                    <Button 
+                      className="w-full gap-2" 
+                      onClick={generateMindMap}
+                      disabled={isGenerating || !topic.trim()}
+                    >
+                      {isGenerating ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          Gerando...
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="h-4 w-4" />
+                          Gerar com IA
+                        </>
+                      )}
+                    </Button>
+
+                    <p className="text-xs text-card-foreground/70 text-center">
+                      A IA criará metodologia, códigos TPU, pontos de atenção e fórmulas de cálculo.
+                    </p>
                   </CardContent>
                 </Card>
-              )}
-            </div>
-          </ScrollArea>
+
+                {/* History */}
+                {history.length > 0 && (
+                  <Card className="overflow-hidden">
+                    <CardContent className="p-4">
+                      <div className="flex items-center gap-2 mb-3">
+                        <History className="h-4 w-4 text-card-foreground/70" />
+                        <h3 className="text-sm font-medium text-card-foreground">Histórico</h3>
+                      </div>
+                      <div className="space-y-2">
+                        {history.map((map) => (
+                          <div 
+                            key={map.id}
+                            className={`group p-2 rounded-lg border cursor-pointer transition-colors ${
+                              currentMap?.id === map.id 
+                                ? 'bg-primary/10 border-primary/50' 
+                                : 'hover:bg-muted'
+                            }`}
+                            onClick={() => loadFromHistory(map)}
+                          >
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="flex-1 min-w-0 overflow-hidden">
+                                <p className="text-sm font-medium truncate text-card-foreground">{map.topic}</p>
+                                <p className="text-xs text-card-foreground/70">
+                                  {map.nodes.length} itens • {map.createdAt.toLocaleDateString('pt-BR')}
+                                </p>
+                              </div>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-6 w-6 opacity-0 group-hover:opacity-100 shrink-0"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  deleteFromHistory(map.id);
+                                }}
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+            </ScrollArea>
+          </div>
 
           {/* Main Canvas */}
           <div className="lg:col-span-3">

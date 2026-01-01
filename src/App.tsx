@@ -8,6 +8,7 @@ import { LayoutProvider } from "@/contexts/LayoutContext";
 import { ScreenProtectionOverlay, ScreenProtectionStyles, useScreenProtection } from "@/components/protection/ScreenProtection";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
+import Admin from "./pages/Admin";
 import Comparar from "./pages/Comparar";
 import Analise from "./pages/Analise";
 import MapaMental from "./pages/MapaMental";
@@ -27,6 +28,7 @@ const ProtectedApp = () => {
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
+          <Route path="/admin" element={<Admin />} />
           <Route path="/comparar" element={<Comparar />} />
           <Route path="/analise" element={<Analise />} />
           <Route path="/mapa-mental" element={<MapaMental />} />

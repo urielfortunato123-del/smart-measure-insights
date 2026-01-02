@@ -77,6 +77,44 @@ const Index = () => {
     });
   }, [toast]);
 
+  // Check for exported survey data from mind map
+  useEffect(() => {
+    const exportedData = localStorage.getItem('survey_export');
+    if (exportedData) {
+      try {
+        const parsed = JSON.parse(exportedData);
+        if (parsed.items && parsed.items.length > 0) {
+          const newEntries: MeasurementEntry[] = parsed.items.map((item: any, index: number) => ({
+            id: `survey-${Date.now()}-${index}`,
+            codigo: item.codigo || `ITEM-${String(index + 1).padStart(3, '0')}`,
+            descricao: item.descricao,
+            unidade: item.unidade || 'UN',
+            quantidade: Number(item.quantidade) || 0,
+            valorUnitario: Number(item.valorUnitario) || 0,
+            valorTotal: Number(item.valorTotal) || 0,
+            local: item.local || 'Não informado',
+            disciplina: item.disciplina || 'Geral',
+            responsavel: item.responsavel || 'Não informado',
+            data: new Date().toISOString().split('T')[0]
+          }));
+          
+          setData(prev => [...prev, ...newEntries]);
+          setLastUpdate(new Date());
+          
+          toast({
+            title: `Levantamento importado!`,
+            description: `${newEntries.length} itens de "${parsed.surveyName}" adicionados.`
+          });
+          
+          // Clear the export data
+          localStorage.removeItem('survey_export');
+        }
+      } catch (e) {
+        console.error('Error parsing survey export:', e);
+      }
+    }
+  }, [toast]);
+
   const handleAlertClick = useCallback((alert: Alert) => {
     setSelectedAlert(alert);
     setAlertModalOpen(true);

@@ -83,19 +83,20 @@ const Index = () => {
     if (exportedData) {
       try {
         const parsed = JSON.parse(exportedData);
-        if (parsed.items && parsed.items.length > 0) {
+        if (parsed.items && Array.isArray(parsed.items) && parsed.items.length > 0) {
           const newEntries: MeasurementEntry[] = parsed.items.map((item: any, index: number) => ({
             id: `survey-${Date.now()}-${index}`,
             codigo: item.codigo || `ITEM-${String(index + 1).padStart(3, '0')}`,
-            descricao: item.descricao,
+            descricao: item.descricao || 'Item sem descrição',
             unidade: item.unidade || 'UN',
             quantidade: Number(item.quantidade) || 0,
             valorUnitario: Number(item.valorUnitario) || 0,
-            valorTotal: Number(item.valorTotal) || 0,
+            valorTotal: Number(item.valorTotal) || (Number(item.quantidade) || 0) * (Number(item.valorUnitario) || 0),
             local: item.local || 'Não informado',
             disciplina: item.disciplina || 'Geral',
             responsavel: item.responsavel || 'Não informado',
-            data: new Date().toISOString().split('T')[0]
+            data: new Date().toISOString().split('T')[0],
+            status: 'normal' as const
           }));
           
           setData(prev => [...prev, ...newEntries]);
@@ -103,14 +104,19 @@ const Index = () => {
           
           toast({
             title: `Levantamento importado!`,
-            description: `${newEntries.length} itens de "${parsed.surveyName}" adicionados.`
+            description: `${newEntries.length} itens de "${parsed.surveyName || 'Levantamento'}" adicionados.`
           });
-          
-          // Clear the export data
-          localStorage.removeItem('survey_export');
         }
       } catch (e) {
         console.error('Error parsing survey export:', e);
+        toast({
+          title: 'Erro ao importar',
+          description: 'Não foi possível importar os dados do levantamento.',
+          variant: 'destructive'
+        });
+      } finally {
+        // Always clear the export data to avoid re-processing
+        localStorage.removeItem('survey_export');
       }
     }
   }, [toast]);

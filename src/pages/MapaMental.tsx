@@ -194,9 +194,9 @@ const MapaMental = () => {
       <div className="container py-6">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Sidebar - Input and History */}
-          <div className="lg:col-span-1 overflow-hidden">
+          <div className="lg:col-span-1 w-full max-w-xs mx-auto lg:mx-0">
             <ScrollArea className="h-[calc(100vh-8rem)]">
-              <div className="space-y-4 pr-4">
+              <div className="space-y-4 pr-4 w-full">
                 {/* Input Card */}
                 <Card className="overflow-hidden">
                   <CardContent className="p-4 space-y-4">

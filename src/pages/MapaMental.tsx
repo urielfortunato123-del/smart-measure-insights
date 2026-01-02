@@ -2,13 +2,13 @@ import { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent } from '@/components/ui/card';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { ArrowLeft, Brain, Sparkles, Loader2, History, Trash2, Upload, File, X } from 'lucide-react';
+import { Card } from '@/components/ui/card';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { ArrowLeft, Brain, Sparkles, Loader2, History, Trash2, Upload, File, X, ChevronUp, ChevronDown } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { MindMapCanvas } from '@/components/mindmap/MindMapCanvas';
-import { MindMapData, MindMapNode } from '@/types/mindmap';
+import { MindMapData } from '@/types/mindmap';
 
 const STORAGE_KEY = 'mindmap_history';
 
@@ -22,6 +22,8 @@ const MapaMental = () => {
   const [currentMap, setCurrentMap] = useState<MindMapData | null>(null);
   const [history, setHistory] = useState<MindMapData[]>([]);
   const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
+  const [isPanelExpanded, setIsPanelExpanded] = useState(true);
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
 
   const handleFileAttach = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -39,7 +41,6 @@ const MapaMental = () => {
     setAttachedFiles(prev => prev.filter((_, i) => i !== index));
   };
 
-  // Load history from localStorage
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
@@ -55,7 +56,6 @@ const MapaMental = () => {
     }
   }, []);
 
-  // Save history to localStorage
   const saveHistory = (newHistory: MindMapData[]) => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(newHistory));
     setHistory(newHistory);
@@ -107,9 +107,7 @@ const MapaMental = () => {
       };
 
       setCurrentMap(newMap);
-      
-      // Add to history
-      const newHistory = [newMap, ...history.slice(0, 9)]; // Keep last 10
+      const newHistory = [newMap, ...history.slice(0, 9)];
       saveHistory(newHistory);
 
       toast({
@@ -130,7 +128,6 @@ const MapaMental = () => {
 
   const handleMapChange = (data: MindMapData) => {
     setCurrentMap(data);
-    // Update in history
     const newHistory = history.map(h => h.id === data.id ? data : h);
     saveHistory(newHistory);
   };
@@ -138,6 +135,7 @@ const MapaMental = () => {
   const loadFromHistory = (map: MindMapData) => {
     setCurrentMap(map);
     setTopic(map.topic);
+    setIsHistoryOpen(false);
   };
 
   const deleteFromHistory = (id: string) => {
@@ -168,178 +166,178 @@ const MapaMental = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-14 items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          
+    <div className="h-screen flex flex-col bg-background overflow-hidden">
+      {/* Compact Header */}
+      <header className="shrink-0 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-50">
+        <div className="flex h-12 items-center justify-between px-4">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
-              <Brain className="h-4 w-4 text-primary" />
-            </div>
-            <div>
-              <h1 className="text-lg font-semibold">Mapa Mental de Medições</h1>
-              <p className="text-xs text-muted-foreground">
-                Gere guias de medição com IA
-              </p>
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate('/')}>
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-lg bg-primary/20 flex items-center justify-center">
+                <Brain className="h-3.5 w-3.5 text-primary" />
+              </div>
+              <span className="text-sm font-semibold hidden sm:inline">Mapa Mental de Medições</span>
             </div>
           </div>
+
+          {/* History Button */}
+          <Sheet open={isHistoryOpen} onOpenChange={setIsHistoryOpen}>
+            <SheetTrigger asChild>
+              <Button variant="outline" size="sm" className="gap-2">
+                <History className="h-4 w-4" />
+                <span className="hidden sm:inline">Histórico</span>
+                {history.length > 0 && (
+                  <span className="bg-primary/20 text-primary text-xs px-1.5 py-0.5 rounded-full">
+                    {history.length}
+                  </span>
+                )}
+              </Button>
+            </SheetTrigger>
+            <SheetContent className="w-80 sm:w-96">
+              <SheetHeader>
+                <SheetTitle className="flex items-center gap-2">
+                  <History className="h-5 w-5" />
+                  Histórico de Mapas
+                </SheetTitle>
+              </SheetHeader>
+              <div className="mt-6 space-y-3">
+                {history.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-8">
+                    Nenhum mapa no histórico ainda.
+                  </p>
+                ) : (
+                  history.map((map) => (
+                    <div 
+                      key={map.id}
+                      className={`group p-4 rounded-xl border cursor-pointer transition-all hover:shadow-md ${
+                        currentMap?.id === map.id 
+                          ? 'bg-primary/10 border-primary/50' 
+                          : 'hover:bg-muted border-border'
+                      }`}
+                      onClick={() => loadFromHistory(map)}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium truncate">{map.topic}</p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {map.nodes.length} itens • {map.createdAt.toLocaleDateString('pt-BR')}
+                          </p>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 opacity-0 group-hover:opacity-100 shrink-0"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            deleteFromHistory(map.id);
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
       </header>
 
-      {/* Main Content */}
-      <div className="container py-6">
-        <div className="flex flex-col lg:flex-row gap-6">
-          {/* Sidebar - Input and History */}
-          <aside className="w-full lg:w-80 shrink-0">
-            <Card className="overflow-hidden rounded-2xl border-0 shadow-lg bg-card/80 backdrop-blur">
-              <ScrollArea className="h-auto lg:h-[calc(100vh-8rem)]">
-                <div className="p-5 space-y-4">
-                  {/* Input Section */}
-                  <div className="bg-muted/30 rounded-xl p-4 space-y-4">
-                    <div>
-                      <label className="text-sm font-medium mb-2 block text-card-foreground">
-                        Serviço de Engenharia
-                      </label>
-                      <Textarea
-                        value={topic}
-                        onChange={(e) => setTopic(e.target.value)}
-                        placeholder="Ex: Revestimento cerâmico"
-                        className="min-h-[60px] resize-none w-full rounded-xl bg-background/80 border-0"
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' && !e.shiftKey) {
-                            e.preventDefault();
-                            generateMindMap();
-                          }
-                        }}
-                      />
-                    </div>
-                    
-                    {/* File Upload */}
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-card-foreground">
-                        Anexar Arquivos (opcional)
-                      </label>
-                      <input
-                        type="file"
-                        id="file-upload"
-                        className="hidden"
-                        accept=".dwg,.pdf,.doc,.docx"
-                        multiple
-                        onChange={handleFileAttach}
-                      />
-                      <label
-                        htmlFor="file-upload"
-                        className="flex items-center justify-center gap-2 px-3 py-2.5 border border-dashed border-border/50 rounded-xl cursor-pointer hover:bg-background/50 transition-colors bg-background/30"
-                      >
-                        <Upload className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm text-muted-foreground">DWG, PDF, Word</span>
-                      </label>
-                      
-                      {attachedFiles.length > 0 && (
-                        <div className="space-y-1.5">
-                          {attachedFiles.map((file, index) => (
-                            <div key={index} className="flex items-center gap-2 p-2 bg-muted/50 rounded-lg">
-                              <File className="h-4 w-4 text-primary shrink-0" />
-                              <span className="text-xs truncate flex-1">{file.name}</span>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-5 w-5 shrink-0"
-                                onClick={() => removeFile(index)}
-                              >
-                                <X className="h-3 w-3" />
-                              </Button>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
+      {/* Fullscreen Canvas */}
+      <div className="flex-1 relative overflow-hidden">
+        <MindMapCanvas 
+          data={currentMap}
+          onDataChange={handleMapChange}
+          isGenerating={isGenerating}
+        />
 
-                    <Button 
-                      className="w-full gap-2 rounded-xl" 
-                      onClick={generateMindMap}
-                      disabled={isGenerating || !topic.trim()}
-                    >
-                      {isGenerating ? (
-                        <>
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                          Gerando...
-                        </>
-                      ) : (
-                        <>
-                          <Sparkles className="h-4 w-4" />
-                          Gerar com IA
-                        </>
-                      )}
-                    </Button>
+        {/* Floating Control Panel */}
+        <Card className={`absolute bottom-4 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-2xl shadow-2xl border-0 bg-card/95 backdrop-blur-xl transition-all duration-300 animate-fade-in ${isPanelExpanded ? 'rounded-2xl' : 'rounded-full'}`}>
+          {/* Toggle Button */}
+          <Button
+            variant="ghost"
+            size="sm"
+            className="absolute -top-3 left-1/2 -translate-x-1/2 h-6 px-3 rounded-full bg-card shadow-md border"
+            onClick={() => setIsPanelExpanded(!isPanelExpanded)}
+          >
+            {isPanelExpanded ? <ChevronDown className="h-3 w-3" /> : <ChevronUp className="h-3 w-3" />}
+          </Button>
 
-                    <p className="text-xs text-muted-foreground text-center leading-relaxed">
-                      A IA criará metodologia, códigos TPU, pontos de atenção e fórmulas de cálculo.
-                    </p>
-                  </div>
-
-                  {/* History */}
-                  {history.length > 0 && (
-                    <div className="bg-muted/30 rounded-xl p-4">
-                      <div className="flex items-center gap-2 mb-3">
-                        <History className="h-4 w-4 text-card-foreground/70" />
-                        <h3 className="text-sm font-medium text-card-foreground">Histórico</h3>
-                      </div>
-                      <div className="space-y-2">
-                        {history.map((map) => (
-                          <div 
-                            key={map.id}
-                            className={`group p-3 rounded-xl border cursor-pointer transition-colors ${
-                              currentMap?.id === map.id 
-                                ? 'bg-primary/10 border-primary/50' 
-                                : 'hover:bg-muted border-transparent'
-                            }`}
-                            onClick={() => loadFromHistory(map)}
-                          >
-                            <div className="flex items-start justify-between gap-2">
-                              <div className="flex-1 min-w-0">
-                                <p className="text-sm font-medium truncate text-card-foreground">{map.topic}</p>
-                                <p className="text-xs text-card-foreground/70">
-                                  {map.nodes.length} itens • {map.createdAt.toLocaleDateString('pt-BR')}
-                                </p>
-                              </div>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-6 w-6 opacity-0 group-hover:opacity-100 shrink-0"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  deleteFromHistory(map.id);
-                                }}
-                              >
-                                <Trash2 className="h-3 w-3" />
-                              </Button>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
+          {isPanelExpanded ? (
+            <div className="p-4 space-y-3">
+              {/* Input Row */}
+              <div className="flex gap-3">
+                <Textarea
+                  value={topic}
+                  onChange={(e) => setTopic(e.target.value)}
+                  placeholder="Digite o serviço de engenharia... Ex: Revestimento cerâmico, Pintura externa"
+                  className="min-h-[44px] max-h-[80px] resize-none flex-1 rounded-xl border-muted"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      generateMindMap();
+                    }
+                  }}
+                />
+                <Button 
+                  className="gap-2 rounded-xl px-6 h-auto"
+                  onClick={generateMindMap}
+                  disabled={isGenerating || !topic.trim()}
+                >
+                  {isGenerating ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Sparkles className="h-4 w-4" />
                   )}
-                </div>
-              </ScrollArea>
-            </Card>
-          </aside>
+                  <span className="hidden sm:inline">{isGenerating ? 'Gerando...' : 'Gerar com IA'}</span>
+                </Button>
+              </div>
 
-          {/* Main Canvas */}
-          <div className="flex-1 min-w-0">
-            <Card className="overflow-hidden rounded-2xl border-0 shadow-lg bg-card/80 backdrop-blur p-4">
-              <MindMapCanvas 
-                data={currentMap}
-                onDataChange={handleMapChange}
-                isGenerating={isGenerating}
-              />
-            </Card>
-          </div>
-        </div>
+              {/* File Upload Row */}
+              <div className="flex items-center gap-3">
+                <input
+                  type="file"
+                  id="file-upload"
+                  className="hidden"
+                  accept=".dwg,.pdf,.doc,.docx"
+                  multiple
+                  onChange={handleFileAttach}
+                />
+                <label
+                  htmlFor="file-upload"
+                  className="flex items-center gap-2 px-3 py-2 text-sm border border-dashed border-border/60 rounded-xl cursor-pointer hover:bg-muted/50 transition-colors"
+                >
+                  <Upload className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-muted-foreground">Anexar arquivos</span>
+                </label>
+
+                {attachedFiles.length > 0 && (
+                  <div className="flex items-center gap-2 flex-wrap flex-1">
+                    {attachedFiles.map((file, index) => (
+                      <div key={index} className="flex items-center gap-1.5 px-2 py-1 bg-muted rounded-lg text-xs">
+                        <File className="h-3 w-3 text-primary" />
+                        <span className="max-w-[100px] truncate">{file.name}</span>
+                        <button onClick={() => removeFile(index)} className="hover:text-destructive">
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : (
+            <div className="px-6 py-3 flex items-center justify-center gap-3">
+              <Brain className="h-4 w-4 text-primary" />
+              <span className="text-sm font-medium">
+                {currentMap ? currentMap.topic : 'Clique para criar um mapa mental'}
+              </span>
+            </div>
+          )}
+        </Card>
       </div>
     </div>
   );

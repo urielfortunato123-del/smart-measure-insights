@@ -197,9 +197,9 @@ const MapaMental = () => {
           <aside className="lg:col-span-1 w-full">
             <Card className="overflow-hidden rounded-2xl border-0 shadow-lg bg-card/80 backdrop-blur">
               <ScrollArea className="h-[calc(100vh-8rem)]">
-                <div className="p-4 w-full">
+                <div className="p-5 w-full">
                   {/* Input Section */}
-                  <div className="bg-muted/30 rounded-xl p-4 space-y-3">
+                  <div className="bg-muted/30 rounded-xl p-5 space-y-3">
                     <div className="w-full">
                       <label className="text-sm font-medium mb-2 block text-card-foreground">
                         Serviço de Engenharia
@@ -286,7 +286,7 @@ const MapaMental = () => {
 
                   {/* History */}
                   {history.length > 0 && (
-                    <div className="mt-4 bg-muted/30 rounded-xl p-4">
+                    <div className="mt-5 bg-muted/30 rounded-xl p-5">
                       <div className="flex items-center gap-2 mb-3">
                         <History className="h-4 w-4 text-card-foreground/70" />
                         <h3 className="text-sm font-medium text-card-foreground">Histórico</h3>

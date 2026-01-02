@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 
-const DEMO_DURATION_MS = 3 * 60 * 1000; // 3 minutes
+const DEMO_DURATION_MS = 10 * 60 * 60 * 1000; // 10 hours
 const DEMO_KEY = 'demo_started_at';
 const DEMO_USES_KEY = 'demo_uses';
 const DEMO_WEEK_KEY = 'demo_week_start';

@@ -170,7 +170,7 @@ const MapaMental = () => {
   }
 
   return (
-    <div className="h-screen flex flex-col bg-background overflow-hidden">
+    <div className="h-screen flex flex-col liquid-background overflow-hidden">
       {/* Header */}
       <header className="shrink-0 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-50">
         <div className="flex h-12 items-center px-4 gap-3">
@@ -321,8 +321,8 @@ const MapaMental = () => {
         </div>
 
         {/* Right Panel - Canvas */}
-        <div className="w-1/2 bg-gradient-to-br from-sky-100 via-blue-50 to-indigo-100 dark:from-sky-900/30 dark:via-blue-900/20 dark:to-indigo-900/30">
-          <MindMapCanvas 
+        <div className="w-1/2 bg-white/5 backdrop-blur-sm">
+          <MindMapCanvas
             data={currentMap}
             onDataChange={handleMapChange}
             isGenerating={isGenerating}

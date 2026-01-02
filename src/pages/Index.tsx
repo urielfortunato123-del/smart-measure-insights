@@ -18,6 +18,7 @@ import { getUniqueValues, demoMeasurements } from '@/data/sampleData';
 import { MeasurementEntry, FilterState } from '@/types/measurement';
 import { calculateSmartStats, generateAlerts, formatCurrency, formatNumber, Alert } from '@/lib/analytics';
 import { useLayout } from '@/contexts/LayoutContext';
+import { useAppData } from '@/contexts/AppDataContext';
 import { Ruler, DollarSign, FileText, AlertTriangle, Play, Sparkles } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
@@ -26,6 +27,7 @@ import { useDemoMode } from '@/hooks/useDemoMode';
 const Index = () => {
   const { user, loading } = useAuth();
   const { layout } = useLayout();
+  const { setMeasurementData: setGlobalMeasurementData } = useAppData();
   const navigate = useNavigate();
   const [data, setData] = useState<MeasurementEntry[]>([]);
   const [lastUpdate, setLastUpdate] = useState(new Date());
@@ -39,6 +41,11 @@ const Index = () => {
   const [alertModalOpen, setAlertModalOpen] = useState(false);
   const { toast } = useToast();
   const { isDemoMode, demoExpired, timeRemaining, formattedTime, usesRemaining, maxWeeklyUses } = useDemoMode();
+
+  // Sync local data to global context
+  useEffect(() => {
+    setGlobalMeasurementData(data);
+  }, [data, setGlobalMeasurementData]);
 
   const responsaveis = useMemo(() => getUniqueValues(data, 'responsavel'), [data]);
   const locais = useMemo(() => getUniqueValues(data, 'local'), [data]);

@@ -83,7 +83,7 @@ export const DashboardSidebar = ({
           
           <Separator />
           
-          <AIAssistant data={data} />
+          <AIAssistant />
         </div>
       </ScrollArea>
     </aside>

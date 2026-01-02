@@ -3,9 +3,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Bot, Send, User, Sparkles, AlertCircle, Loader2 } from 'lucide-react';
-import { MeasurementEntry } from '@/types/measurement';
+import { Bot, Send, User, Sparkles, Loader2, Brain, ClipboardList } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useAppData } from '@/contexts/AppDataContext';
 
 interface Message {
   id: string;
@@ -13,18 +13,15 @@ interface Message {
   content: string;
 }
 
-interface AIAssistantProps {
-  data: MeasurementEntry[];
-}
-
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/analyze-measurement`;
 
-export const AIAssistant = ({ data }: AIAssistantProps) => {
+export const AIAssistant = () => {
+  const { getFullContext, measurementData, currentMindMap, surveyItems } = useAppData();
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
       role: 'assistant',
-      content: '👋 Olá! Sou seu assistente de análise de medições.\n\nPosso ajudar a:\n• Identificar erros de cálculo\n• Analisar outliers\n• Resumir dados por disciplina\n• Detectar inconsistências\n\nCarregue uma planilha e pergunte algo!'
+      content: '👋 Olá! Sou seu assistente inteligente.\n\n📊 Tenho acesso a:\n• Dados de medição carregados\n• Mapa mental ativo\n• Levantamento de quantitativos\n\nPergunte qualquer coisa sobre os dados do programa!'
     }
   ]);
   const [input, setInput] = useState('');
@@ -38,6 +35,17 @@ export const AIAssistant = ({ data }: AIAssistantProps) => {
     }
   }, [messages]);
 
+  // Check what data is available
+  const hasData = measurementData.length > 0 || currentMindMap !== null || surveyItems.length > 0;
+  const dataContext = {
+    hasMeasurements: measurementData.length > 0,
+    hasMindMap: currentMindMap !== null,
+    hasSurvey: surveyItems.length > 0,
+    measurementCount: measurementData.length,
+    surveyCount: surveyItems.length,
+    mindMapTopic: currentMindMap?.topic || null
+  };
+
   const streamChat = async (userMessage: string) => {
     const userMsg: Message = {
       id: Date.now().toString(),
@@ -49,6 +57,8 @@ export const AIAssistant = ({ data }: AIAssistantProps) => {
     setIsLoading(true);
 
     try {
+      const fullContext = getFullContext();
+      
       const resp = await fetch(CHAT_URL, {
         method: "POST",
         headers: {
@@ -60,7 +70,12 @@ export const AIAssistant = ({ data }: AIAssistantProps) => {
             role: m.role,
             content: m.content
           })),
-          data: data.length > 0 ? data : null,
+          context: {
+            measurements: fullContext.measurements,
+            mindMap: fullContext.mindMap,
+            survey: fullContext.survey,
+            uploadedFile: fullContext.uploadedFile
+          },
           action: userMessage.toLowerCase().includes('erro') ? 'analyze_errors' : 'chat'
         }),
       });
@@ -149,8 +164,8 @@ export const AIAssistant = ({ data }: AIAssistantProps) => {
 
   const quickActions = [
     { label: 'Verificar erros', action: 'Verifique erros de cálculo nos dados' },
-    { label: 'Resumo geral', action: 'Faça um resumo geral dos dados' },
-    { label: 'Outliers', action: 'Identifique outliers e valores suspeitos' }
+    { label: 'Resumo geral', action: 'Faça um resumo geral dos dados carregados' },
+    { label: 'Analisar quantitativos', action: 'Analise o levantamento de quantitativos' }
   ];
 
   return (
@@ -163,12 +178,27 @@ export const AIAssistant = ({ data }: AIAssistantProps) => {
         </CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col flex-1 min-h-0 p-2 pt-0">
-        {data.length === 0 && (
-          <div className="flex items-center gap-1 p-1.5 mb-1 bg-muted/50 rounded-lg text-[10px] text-muted-foreground">
-            <AlertCircle className="h-3 w-3" />
-            <span className="truncate">Carregue uma planilha para análise completa</span>
-          </div>
-        )}
+        {/* Context indicators */}
+        <div className="flex gap-1 mb-1 flex-wrap">
+          {dataContext.hasMeasurements && (
+            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-primary/10 text-primary text-[8px] rounded-full">
+              <ClipboardList className="h-2 w-2" />
+              {dataContext.measurementCount}
+            </span>
+          )}
+          {dataContext.hasMindMap && (
+            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-primary/10 text-primary text-[8px] rounded-full">
+              <Brain className="h-2 w-2" />
+              Mapa
+            </span>
+          )}
+          {dataContext.hasSurvey && (
+            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-primary/10 text-primary text-[8px] rounded-full">
+              <ClipboardList className="h-2 w-2" />
+              {dataContext.surveyCount} itens
+            </span>
+          )}
+        </div>
         
         <ScrollArea className="flex-1 pr-3" ref={scrollRef}>
           <div className="space-y-3">
@@ -216,7 +246,7 @@ export const AIAssistant = ({ data }: AIAssistantProps) => {
         </ScrollArea>
 
         {/* Quick actions */}
-        {data.length > 0 && messages.length <= 2 && (
+        {hasData && messages.length <= 2 && (
           <div className="flex gap-1 mt-2 flex-wrap">
             {quickActions.map((qa) => (
               <Button

@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { LayoutProvider } from "@/contexts/LayoutContext";
+import { AppDataProvider } from "@/contexts/AppDataContext";
 import { ScreenProtectionOverlay, ScreenProtectionStyles, useScreenProtection } from "@/components/protection/ScreenProtection";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -61,11 +62,13 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
       <LayoutProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <ProtectedApp />
-        </TooltipProvider>
+        <AppDataProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <ProtectedApp />
+          </TooltipProvider>
+        </AppDataProvider>
       </LayoutProvider>
     </AuthProvider>
   </QueryClientProvider>

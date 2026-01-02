@@ -9,6 +9,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { MindMapCanvas } from '@/components/mindmap/MindMapCanvas';
 import { MindMapData } from '@/types/mindmap';
+import { useAppData } from '@/contexts/AppDataContext';
 
 const STORAGE_KEY = 'mindmap_history';
 
@@ -16,12 +17,18 @@ const MapaMental = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { setCurrentMindMap: setGlobalMindMap } = useAppData();
   
   const [topic, setTopic] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [currentMap, setCurrentMap] = useState<MindMapData | null>(null);
   const [history, setHistory] = useState<MindMapData[]>([]);
   const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
+
+  // Sync current mind map to global context
+  useEffect(() => {
+    setGlobalMindMap(currentMap);
+  }, [currentMap, setGlobalMindMap]);
 
   const handleFileAttach = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;

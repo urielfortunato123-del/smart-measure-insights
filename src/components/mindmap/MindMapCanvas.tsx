@@ -144,21 +144,26 @@ export const MindMapCanvas = ({ data, onDataChange, isGenerating }: MindMapCanva
 
   if (!data || data.nodes.length === 0) {
     return (
-      <Card className="flex-1 flex items-center justify-center min-h-[400px]">
-        <CardContent className="text-center max-w-md">
-          <div className="bg-muted/50 rounded-full p-6 mb-4 mx-auto w-fit">
-            <Lightbulb className="h-12 w-12 text-muted-foreground" />
-          </div>
-          <h3 className="text-lg font-semibold mb-2 text-card-foreground">Comece seu Mapa Mental</h3>
-          <p className="text-sm text-card-foreground/70 mb-4">
-            Digite um serviço de engenharia na barra acima e clique em "Gerar com IA" 
-            para criar automaticamente um mapa de medição.
-          </p>
-          <p className="text-xs text-card-foreground/60">
-            Exemplos: "Revestimento cerâmico", "Pintura externa", "Alvenaria estrutural"
-          </p>
-        </CardContent>
-      </Card>
+      <div className="flex-1 flex flex-col gap-4">
+        <Card className="flex items-center justify-center min-h-[200px]">
+          <CardContent className="text-center max-w-md py-8">
+            <div className="bg-muted/50 rounded-full p-6 mb-4 mx-auto w-fit">
+              <Lightbulb className="h-12 w-12 text-muted-foreground" />
+            </div>
+            <h3 className="text-lg font-semibold mb-2 text-card-foreground">Comece seu Mapa Mental</h3>
+            <p className="text-sm text-card-foreground/70 mb-4">
+              Digite um serviço de engenharia na barra acima e clique em "Gerar com IA" 
+              para criar automaticamente um mapa de medição.
+            </p>
+            <p className="text-xs text-card-foreground/60">
+              Exemplos: "Revestimento cerâmico", "Pintura externa", "Alvenaria estrutural"
+            </p>
+          </CardContent>
+        </Card>
+        
+        {/* Partial Survey - always visible */}
+        <PartialSurvey mindMapId="new" mindMapTopic="Novo Levantamento" />
+      </div>
     );
   }
 

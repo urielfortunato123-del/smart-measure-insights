@@ -176,9 +176,11 @@ export const MindMapCanvas = ({ data, onDataChange, isGenerating }: MindMapCanva
         </ResizableHandle>
         
         <ResizablePanel defaultSize={60} minSize={30}>
-          <div className="h-full overflow-hidden p-4">
-            <PartialSurvey mindMapId="new" mindMapTopic="Novo Levantamento" />
-          </div>
+          <ScrollArea className="h-full">
+            <div className="p-4">
+              <PartialSurvey mindMapId="new" mindMapTopic="Novo Levantamento" />
+            </div>
+          </ScrollArea>
         </ResizablePanel>
       </ResizablePanelGroup>
     );
@@ -406,9 +408,11 @@ export const MindMapCanvas = ({ data, onDataChange, isGenerating }: MindMapCanva
       
       {/* Partial Survey Panel */}
       <ResizablePanel defaultSize={50} minSize={20}>
-        <div className="h-full overflow-hidden p-4">
-          <PartialSurvey mindMapId={data.id} mindMapTopic={data.topic} />
-        </div>
+        <ScrollArea className="h-full">
+          <div className="p-4">
+            <PartialSurvey mindMapId={data.id} mindMapTopic={data.topic} />
+          </div>
+        </ScrollArea>
       </ResizablePanel>
     </ResizablePanelGroup>
   );

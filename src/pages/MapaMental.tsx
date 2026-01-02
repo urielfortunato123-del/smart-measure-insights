@@ -193,8 +193,17 @@ const MapaMental = () => {
       {/* Main Content */}
       <div className="container py-6">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          {/* Main Canvas */}
+          <div className="lg:col-span-3">
+            <MindMapCanvas 
+              data={currentMap}
+              onDataChange={handleMapChange}
+              isGenerating={isGenerating}
+            />
+          </div>
+
           {/* Sidebar - Input and History */}
-          <div className="lg:col-span-1 w-full max-w-xs mx-auto lg:mx-0">
+          <aside className="lg:col-span-1 w-full max-w-xs mx-auto lg:mx-0 lg:ml-auto">
             <ScrollArea className="h-[calc(100vh-8rem)]">
               <div className="space-y-4 pr-4 w-full">
                 {/* Input Card */}
@@ -331,16 +340,7 @@ const MapaMental = () => {
                 )}
               </div>
             </ScrollArea>
-          </div>
-
-          {/* Main Canvas */}
-          <div className="lg:col-span-3">
-            <MindMapCanvas 
-              data={currentMap}
-              onDataChange={handleMapChange}
-              isGenerating={isGenerating}
-            />
-          </div>
+          </aside>
         </div>
       </div>
     </div>

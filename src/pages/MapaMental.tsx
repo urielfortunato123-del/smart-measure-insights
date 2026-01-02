@@ -197,9 +197,9 @@ const MapaMental = () => {
           <aside className="lg:col-span-1 w-full">
             <Card className="overflow-hidden rounded-2xl border-0 shadow-lg bg-card/80 backdrop-blur">
               <ScrollArea className="h-[calc(100vh-8rem)]">
-                <div className="space-y-4 p-4 w-full">
-                  {/* Input Card */}
-                  <div className="space-y-4">
+                <div className="p-3 w-full">
+                  {/* Input Section */}
+                  <div className="bg-muted/30 rounded-xl p-3 space-y-3">
                     <div className="w-full">
                       <label className="text-sm font-medium mb-2 block text-card-foreground">
                         Serviço de Engenharia
@@ -208,7 +208,7 @@ const MapaMental = () => {
                         value={topic}
                         onChange={(e) => setTopic(e.target.value)}
                         placeholder="Ex: Revestimento cerâmico"
-                        className="min-h-[60px] resize-none w-full rounded-xl bg-muted/50"
+                        className="min-h-[60px] resize-none w-full rounded-xl bg-background/80 border-0"
                         onKeyDown={(e) => {
                           if (e.key === 'Enter' && !e.shiftKey) {
                             e.preventDefault();
@@ -234,7 +234,7 @@ const MapaMental = () => {
                         />
                         <label
                           htmlFor="file-upload"
-                          className="flex-1 flex items-center justify-center gap-2 px-3 py-2 border border-dashed border-border rounded-xl cursor-pointer hover:bg-muted/50 transition-colors"
+                          className="flex-1 flex items-center justify-center gap-2 px-3 py-2 border border-dashed border-border/50 rounded-xl cursor-pointer hover:bg-background/50 transition-colors bg-background/30"
                         >
                           <Upload className="h-4 w-4 text-muted-foreground" />
                           <span className="text-sm text-muted-foreground">DWG, PDF, Word</span>
@@ -286,7 +286,7 @@ const MapaMental = () => {
 
                   {/* History */}
                   {history.length > 0 && (
-                    <div className="border-t border-border pt-4">
+                    <div className="mt-3 bg-muted/30 rounded-xl p-3">
                       <div className="flex items-center gap-2 mb-3">
                         <History className="h-4 w-4 text-card-foreground/70" />
                         <h3 className="text-sm font-medium text-card-foreground">Histórico</h3>

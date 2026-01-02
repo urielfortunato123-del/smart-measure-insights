@@ -279,7 +279,7 @@ const MapaMental = () => {
                       )}
                     </Button>
 
-                    <p className="text-xs text-card-foreground/70 text-center">
+                    <p className="text-xs text-muted-foreground text-center">
                       A IA criará metodologia, códigos TPU, pontos de atenção e fórmulas de cálculo.
                     </p>
                   </CardContent>

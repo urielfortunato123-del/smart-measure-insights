@@ -226,18 +226,20 @@ export const MindMapCanvas = ({ data, onDataChange, isGenerating }: MindMapCanva
                 </Badge>
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <ScrollArea className="max-h-[400px] pr-2">
-                {groupedNodes.methodology.map(node => (
-                  <MindMapNodeComponent
+            <CardContent className="p-0">
+              <ScrollArea className="h-[350px]">
+                <div className="p-4 pt-0 space-y-2">
+                  {groupedNodes.methodology.map(node => (
+                    <MindMapNodeComponent
                     key={node.id}
                     node={node}
                     level={0}
                     onUpdate={handleUpdate}
                     onDelete={handleDelete}
-                    onAddChild={handleAddChild}
-                  />
-                ))}
+                      onAddChild={handleAddChild}
+                    />
+                  ))}
+                </div>
               </ScrollArea>
             </CardContent>
           </Card>
@@ -257,18 +259,20 @@ export const MindMapCanvas = ({ data, onDataChange, isGenerating }: MindMapCanva
                 </Badge>
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <ScrollArea className="max-h-[400px] pr-2">
-                {groupedNodes.tpu.map(node => (
-                  <MindMapNodeComponent
+            <CardContent className="p-0">
+              <ScrollArea className="h-[350px]">
+                <div className="p-4 pt-0 space-y-2">
+                  {groupedNodes.tpu.map(node => (
+                    <MindMapNodeComponent
                     key={node.id}
                     node={node}
                     level={0}
                     onUpdate={handleUpdate}
                     onDelete={handleDelete}
-                    onAddChild={handleAddChild}
-                  />
-                ))}
+                      onAddChild={handleAddChild}
+                    />
+                  ))}
+                </div>
               </ScrollArea>
             </CardContent>
           </Card>
@@ -288,18 +292,20 @@ export const MindMapCanvas = ({ data, onDataChange, isGenerating }: MindMapCanva
                 </Badge>
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <ScrollArea className="max-h-[400px] pr-2">
-                {groupedNodes.attention.map(node => (
-                  <MindMapNodeComponent
+            <CardContent className="p-0">
+              <ScrollArea className="h-[350px]">
+                <div className="p-4 pt-0 space-y-2">
+                  {groupedNodes.attention.map(node => (
+                    <MindMapNodeComponent
                     key={node.id}
                     node={node}
                     level={0}
                     onUpdate={handleUpdate}
                     onDelete={handleDelete}
-                    onAddChild={handleAddChild}
-                  />
-                ))}
+                      onAddChild={handleAddChild}
+                    />
+                  ))}
+                </div>
               </ScrollArea>
             </CardContent>
           </Card>
@@ -319,18 +325,20 @@ export const MindMapCanvas = ({ data, onDataChange, isGenerating }: MindMapCanva
                 </Badge>
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <ScrollArea className="max-h-[400px] pr-2">
-                {groupedNodes.calculation.map(node => (
-                  <MindMapNodeComponent
+            <CardContent className="p-0">
+              <ScrollArea className="h-[350px]">
+                <div className="p-4 pt-0 space-y-2">
+                  {groupedNodes.calculation.map(node => (
+                    <MindMapNodeComponent
                     key={node.id}
                     node={node}
                     level={0}
                     onUpdate={handleUpdate}
                     onDelete={handleDelete}
-                    onAddChild={handleAddChild}
-                  />
-                ))}
+                      onAddChild={handleAddChild}
+                    />
+                  ))}
+                </div>
               </ScrollArea>
             </CardContent>
           </Card>
@@ -347,19 +355,21 @@ export const MindMapCanvas = ({ data, onDataChange, isGenerating }: MindMapCanva
                 </Badge>
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <ScrollArea className="max-h-[300px] pr-2">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                  {groupedNodes.custom.map(node => (
-                    <MindMapNodeComponent
-                      key={node.id}
-                      node={node}
-                      level={0}
-                      onUpdate={handleUpdate}
-                      onDelete={handleDelete}
-                      onAddChild={handleAddChild}
-                    />
-                  ))}
+            <CardContent className="p-0">
+              <ScrollArea className="h-[300px]">
+                <div className="p-4 pt-0">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    {groupedNodes.custom.map(node => (
+                      <MindMapNodeComponent
+                        key={node.id}
+                        node={node}
+                        level={0}
+                        onUpdate={handleUpdate}
+                        onDelete={handleDelete}
+                        onAddChild={handleAddChild}
+                      />
+                    ))}
+                  </div>
                 </div>
               </ScrollArea>
             </CardContent>

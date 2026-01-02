@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { ArrowLeft, Brain, Sparkles, Loader2, History, Trash2 } from 'lucide-react';
+import { ArrowLeft, Brain, Sparkles, Loader2, History, Trash2, Upload, File, X } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { MindMapCanvas } from '@/components/mindmap/MindMapCanvas';
@@ -21,6 +21,23 @@ const MapaMental = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [currentMap, setCurrentMap] = useState<MindMapData | null>(null);
   const [history, setHistory] = useState<MindMapData[]>([]);
+  const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
+
+  const handleFileAttach = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files) {
+      const newFiles = Array.from(files).filter(file => {
+        const ext = file.name.toLowerCase().split('.').pop();
+        return ['dwg', 'pdf', 'doc', 'docx'].includes(ext || '');
+      });
+      setAttachedFiles(prev => [...prev, ...newFiles]);
+    }
+    e.target.value = '';
+  };
+
+  const removeFile = (index: number) => {
+    setAttachedFiles(prev => prev.filter((_, i) => i !== index));
+  };
 
   // Load history from localStorage
   useEffect(() => {
@@ -201,6 +218,49 @@ const MapaMental = () => {
                       />
                     </div>
                     
+                    {/* File Upload */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-card-foreground">
+                        Anexar Arquivos (opcional)
+                      </label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="file"
+                          id="file-upload"
+                          className="hidden"
+                          accept=".dwg,.pdf,.doc,.docx"
+                          multiple
+                          onChange={handleFileAttach}
+                        />
+                        <label
+                          htmlFor="file-upload"
+                          className="flex-1 flex items-center justify-center gap-2 px-3 py-2 border border-dashed border-border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors"
+                        >
+                          <Upload className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm text-muted-foreground">DWG, PDF, Word</span>
+                        </label>
+                      </div>
+                      
+                      {attachedFiles.length > 0 && (
+                        <div className="space-y-1">
+                          {attachedFiles.map((file, index) => (
+                            <div key={index} className="flex items-center gap-2 p-2 bg-muted/50 rounded-lg">
+                              <File className="h-4 w-4 text-primary shrink-0" />
+                              <span className="text-xs truncate flex-1">{file.name}</span>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-5 w-5 shrink-0"
+                                onClick={() => removeFile(index)}
+                              >
+                                <X className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
                     <Button 
                       className="w-full gap-2" 
                       onClick={generateMindMap}

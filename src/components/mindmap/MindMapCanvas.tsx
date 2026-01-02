@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { MindMapNode, MindMapData } from '@/types/mindmap';
 import { MindMapNodeComponent } from './MindMapNode';
+import { PartialSurvey } from './PartialSurvey';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -209,6 +210,9 @@ export const MindMapCanvas = ({ data, onDataChange, isGenerating }: MindMapCanva
           Cálculo
         </Button>
       </div>
+
+      {/* Partial Survey Component */}
+      <PartialSurvey mindMapId={data.id} mindMapTopic={data.topic} />
 
       {/* Mind Map Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">

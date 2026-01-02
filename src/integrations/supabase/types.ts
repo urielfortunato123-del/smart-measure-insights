@@ -278,6 +278,45 @@ export type Database = {
         }
         Relationships: []
       }
+      project_surveys: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          mind_map_id: string
+          name: string
+          source_file_name: string | null
+          source_file_type: string | null
+          total_items: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          mind_map_id: string
+          name: string
+          source_file_name?: string | null
+          source_file_type?: string | null
+          total_items?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          mind_map_id?: string
+          name?: string
+          source_file_name?: string | null
+          source_file_type?: string | null
+          total_items?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       projects: {
         Row: {
           contract_value: number | null
@@ -313,6 +352,74 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      survey_items: {
+        Row: {
+          created_at: string
+          description: string
+          floor_level: string | null
+          id: string
+          is_selected: boolean | null
+          item_code: string | null
+          location: string | null
+          notes: string | null
+          partial_quantity: number | null
+          sector: string | null
+          survey_id: string
+          total_quantity: number | null
+          total_value: number | null
+          unit: string | null
+          unit_price: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          floor_level?: string | null
+          id?: string
+          is_selected?: boolean | null
+          item_code?: string | null
+          location?: string | null
+          notes?: string | null
+          partial_quantity?: number | null
+          sector?: string | null
+          survey_id: string
+          total_quantity?: number | null
+          total_value?: number | null
+          unit?: string | null
+          unit_price?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          floor_level?: string | null
+          id?: string
+          is_selected?: boolean | null
+          item_code?: string | null
+          location?: string | null
+          notes?: string | null
+          partial_quantity?: number | null
+          sector?: string | null
+          survey_id?: string
+          total_quantity?: number | null
+          total_value?: number | null
+          unit?: string | null
+          unit_price?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "survey_items_survey_id_fkey"
+            columns: ["survey_id"]
+            isOneToOne: false
+            referencedRelation: "project_surveys"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_analytics: {
         Row: {

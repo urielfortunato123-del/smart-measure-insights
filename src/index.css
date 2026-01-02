@@ -212,17 +212,17 @@
   .liquid-background {
     background: 
       linear-gradient(135deg, 
-        hsl(210 70% 60%) 0%, 
-        hsl(210 60% 50%) 25%,
-        hsl(200 65% 55%) 50%,
-        hsl(210 55% 45%) 75%,
-        hsl(220 60% 50%) 100%
+        hsl(200 85% 75%) 0%, 
+        hsl(210 80% 70%) 25%,
+        hsl(205 75% 65%) 50%,
+        hsl(210 70% 60%) 75%,
+        hsl(215 75% 65%) 100%
       );
     background-size: 400% 400%;
     animation: liquid-shift 15s ease infinite;
   }
 
-  .liquid-background-dark {
+  .dark .liquid-background {
     background: 
       linear-gradient(135deg, 
         hsl(215 50% 15%) 0%, 

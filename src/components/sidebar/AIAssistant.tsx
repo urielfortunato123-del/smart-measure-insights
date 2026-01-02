@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Bot, Send, User, Sparkles, Loader2, Brain, ClipboardList } from 'lucide-react';
+import { Bot, Send, User, Sparkles, Loader2, Brain, ClipboardList, Copy, Check } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAppData } from '@/contexts/AppDataContext';
 
@@ -26,6 +26,7 @@ export const AIAssistant = () => {
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -168,6 +169,24 @@ export const AIAssistant = () => {
     { label: 'Analisar quantitativos', action: 'Analise o levantamento de quantitativos' }
   ];
 
+  const handleCopy = async (messageId: string, content: string) => {
+    try {
+      await navigator.clipboard.writeText(content);
+      setCopiedId(messageId);
+      toast({
+        title: 'Copiado!',
+        description: 'Texto copiado para a área de transferência',
+      });
+      setTimeout(() => setCopiedId(null), 2000);
+    } catch {
+      toast({
+        title: 'Erro ao copiar',
+        description: 'Não foi possível copiar o texto',
+        variant: 'destructive'
+      });
+    }
+  };
+
   return (
     <Card className="border-border flex flex-col h-[300px] max-w-[180px]">
       <CardHeader className="pb-1 px-2 py-2 shrink-0">
@@ -220,6 +239,20 @@ export const AIAssistant = () => {
                   }`}
                 >
                   <div className="whitespace-pre-wrap">{message.content}</div>
+                  {message.role === 'assistant' && message.content && message.id !== '1' && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-5 px-1.5 mt-1 text-[9px] text-muted-foreground hover:text-foreground"
+                      onClick={() => handleCopy(message.id, message.content)}
+                    >
+                      {copiedId === message.id ? (
+                        <><Check className="h-2.5 w-2.5 mr-0.5" /> Copiado</>
+                      ) : (
+                        <><Copy className="h-2.5 w-2.5 mr-0.5" /> Copiar</>
+                      )}
+                    </Button>
+                  )}
                 </div>
                 {message.role === 'user' && (
                   <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center shrink-0">

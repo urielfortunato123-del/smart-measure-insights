@@ -193,21 +193,12 @@ const MapaMental = () => {
       {/* Main Content */}
       <div className="container py-6">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Main Canvas */}
-          <div className="lg:col-span-3">
-            <MindMapCanvas 
-              data={currentMap}
-              onDataChange={handleMapChange}
-              isGenerating={isGenerating}
-            />
-          </div>
-
           {/* Sidebar - Input and History */}
-          <aside className="lg:col-span-1 w-full max-w-xs mx-auto lg:mx-0 lg:ml-auto">
+          <aside className="lg:col-span-1 w-full">
             <ScrollArea className="h-[calc(100vh-8rem)]">
               <div className="space-y-4 pr-4 w-full">
                 {/* Input Card */}
-                <Card className="overflow-hidden">
+                <Card className="overflow-hidden rounded-lg">
                   <CardContent className="p-4 space-y-4">
                     <div className="w-full">
                       <label className="text-sm font-medium mb-2 block text-card-foreground">
@@ -217,7 +208,7 @@ const MapaMental = () => {
                         value={topic}
                         onChange={(e) => setTopic(e.target.value)}
                         placeholder="Ex: Revestimento cerâmico"
-                        className="min-h-[60px] resize-none w-full"
+                        className="min-h-[60px] resize-none w-full rounded-md"
                         onKeyDown={(e) => {
                           if (e.key === 'Enter' && !e.shiftKey) {
                             e.preventDefault();
@@ -296,7 +287,7 @@ const MapaMental = () => {
 
                 {/* History */}
                 {history.length > 0 && (
-                  <Card className="overflow-hidden">
+                  <Card className="overflow-hidden rounded-lg">
                     <CardContent className="p-4">
                       <div className="flex items-center gap-2 mb-3">
                         <History className="h-4 w-4 text-card-foreground/70" />
@@ -306,7 +297,7 @@ const MapaMental = () => {
                         {history.map((map) => (
                           <div 
                             key={map.id}
-                            className={`group p-2 rounded-lg border cursor-pointer transition-colors ${
+                            className={`group p-2 rounded-md border cursor-pointer transition-colors ${
                               currentMap?.id === map.id 
                                 ? 'bg-primary/10 border-primary/50' 
                                 : 'hover:bg-muted'
@@ -341,6 +332,15 @@ const MapaMental = () => {
               </div>
             </ScrollArea>
           </aside>
+
+          {/* Main Canvas */}
+          <div className="lg:col-span-3">
+            <MindMapCanvas 
+              data={currentMap}
+              onDataChange={handleMapChange}
+              isGenerating={isGenerating}
+            />
+          </div>
         </div>
       </div>
     </div>

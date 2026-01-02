@@ -66,9 +66,13 @@ export const SmartDataTable = ({ data }: SmartDataTableProps) => {
   const sortedData = [...filteredData].sort((a, b) => {
     const multiplier = sortDirection === 'asc' ? 1 : -1;
     if (sortField === 'date') {
-      return multiplier * a.date.localeCompare(b.date);
+      const dateA = a.date || '';
+      const dateB = b.date || '';
+      return multiplier * dateA.localeCompare(dateB);
     }
-    return multiplier * (a[sortField] - b[sortField]);
+    const valA = a[sortField] ?? 0;
+    const valB = b[sortField] ?? 0;
+    return multiplier * (valA - valB);
   });
 
   const handleSort = (field: SortField) => {

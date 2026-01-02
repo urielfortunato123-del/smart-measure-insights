@@ -197,7 +197,7 @@ const MapaMental = () => {
           <aside className="lg:col-span-1 w-full">
             <Card className="overflow-hidden rounded-2xl border-0 shadow-lg bg-card/80 backdrop-blur">
               <ScrollArea className="h-[calc(100vh-8rem)]">
-                <div className="p-5 w-full">
+                <div className="py-5 pl-5 pr-9 w-full">
                   {/* Input Section */}
                   <div className="bg-muted/30 rounded-xl p-5 space-y-3">
                     <div className="w-full">

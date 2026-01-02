@@ -116,18 +116,10 @@ export const PartialSurvey = ({ mindMapId, mindMapTopic }: PartialSurveyProps) =
 
     setIsExtracting(true);
     try {
-      const fileContent = await readFileContent(uploadedFile);
+      // Convert file to base64 for PDF processing on backend
+      const fileBase64 = await readFileAsBase64(uploadedFile);
+      const ext = uploadedFile.name.toLowerCase().split('.').pop();
       
-      if (!fileContent || fileContent.length < 20) {
-        toast({
-          title: 'Conteúdo insuficiente',
-          description: 'O arquivo parece estar vazio ou com pouco texto legível.',
-          variant: 'destructive'
-        });
-        setIsExtracting(false);
-        return;
-      }
-
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/extract-survey`,
         {
@@ -137,7 +129,8 @@ export const PartialSurvey = ({ mindMapId, mindMapTopic }: PartialSurveyProps) =
             'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
           },
           body: JSON.stringify({
-            fileContent: fileContent.substring(0, 80000),
+            fileBase64,
+            fileType: ext,
             fileName: uploadedFile.name,
             projectContext: mindMapTopic
           }),
@@ -192,17 +185,17 @@ export const PartialSurvey = ({ mindMapId, mindMapTopic }: PartialSurveyProps) =
     }
   };
 
-  const readFileContent = async (file: File): Promise<string> => {
+  const readFileAsBase64 = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
-      reader.onload = (e) => {
-        const content = e.target?.result as string;
-        resolve(content || '');
+      reader.onload = () => {
+        const result = reader.result as string;
+        // Remove data URL prefix (e.g., "data:application/pdf;base64,")
+        const base64 = result.split(',')[1];
+        resolve(base64);
       };
       reader.onerror = () => reject(new Error('Erro ao ler arquivo'));
-      
-      // Try to read as text first
-      reader.readAsText(file);
+      reader.readAsDataURL(file);
     });
   };
 

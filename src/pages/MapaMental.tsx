@@ -195,11 +195,11 @@ const MapaMental = () => {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Sidebar - Input and History */}
           <aside className="lg:col-span-1 w-full">
-            <ScrollArea className="h-[calc(100vh-8rem)]">
-              <div className="space-y-4 pr-4 w-full">
-                {/* Input Card */}
-                <Card className="overflow-hidden rounded-lg">
-                  <CardContent className="p-4 space-y-4">
+            <Card className="overflow-hidden rounded-2xl border-0 shadow-lg bg-card/80 backdrop-blur">
+              <ScrollArea className="h-[calc(100vh-8rem)]">
+                <div className="space-y-4 p-4 w-full">
+                  {/* Input Card */}
+                  <div className="space-y-4">
                     <div className="w-full">
                       <label className="text-sm font-medium mb-2 block text-card-foreground">
                         Serviço de Engenharia
@@ -208,7 +208,7 @@ const MapaMental = () => {
                         value={topic}
                         onChange={(e) => setTopic(e.target.value)}
                         placeholder="Ex: Revestimento cerâmico"
-                        className="min-h-[60px] resize-none w-full rounded-md"
+                        className="min-h-[60px] resize-none w-full rounded-xl bg-muted/50"
                         onKeyDown={(e) => {
                           if (e.key === 'Enter' && !e.shiftKey) {
                             e.preventDefault();
@@ -234,7 +234,7 @@ const MapaMental = () => {
                         />
                         <label
                           htmlFor="file-upload"
-                          className="flex-1 flex items-center justify-center gap-2 px-3 py-2 border border-dashed border-border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors"
+                          className="flex-1 flex items-center justify-center gap-2 px-3 py-2 border border-dashed border-border rounded-xl cursor-pointer hover:bg-muted/50 transition-colors"
                         >
                           <Upload className="h-4 w-4 text-muted-foreground" />
                           <span className="text-sm text-muted-foreground">DWG, PDF, Word</span>
@@ -244,7 +244,7 @@ const MapaMental = () => {
                       {attachedFiles.length > 0 && (
                         <div className="space-y-1">
                           {attachedFiles.map((file, index) => (
-                            <div key={index} className="flex items-center gap-2 p-2 bg-muted/50 rounded-lg">
+                            <div key={index} className="flex items-center gap-2 p-2 bg-muted/50 rounded-xl">
                               <File className="h-4 w-4 text-primary shrink-0" />
                               <span className="text-xs truncate flex-1">{file.name}</span>
                               <Button
@@ -262,7 +262,7 @@ const MapaMental = () => {
                     </div>
 
                     <Button 
-                      className="w-full gap-2" 
+                      className="w-full gap-2 rounded-xl" 
                       onClick={generateMindMap}
                       disabled={isGenerating || !topic.trim()}
                     >
@@ -282,13 +282,11 @@ const MapaMental = () => {
                     <p className="text-xs text-muted-foreground text-center">
                       A IA criará metodologia, códigos TPU, pontos de atenção e fórmulas de cálculo.
                     </p>
-                  </CardContent>
-                </Card>
+                  </div>
 
-                {/* History */}
-                {history.length > 0 && (
-                  <Card className="overflow-hidden rounded-lg">
-                    <CardContent className="p-4">
+                  {/* History */}
+                  {history.length > 0 && (
+                    <div className="border-t border-border pt-4">
                       <div className="flex items-center gap-2 mb-3">
                         <History className="h-4 w-4 text-card-foreground/70" />
                         <h3 className="text-sm font-medium text-card-foreground">Histórico</h3>
@@ -297,10 +295,10 @@ const MapaMental = () => {
                         {history.map((map) => (
                           <div 
                             key={map.id}
-                            className={`group p-2 rounded-md border cursor-pointer transition-colors ${
+                            className={`group p-3 rounded-xl border cursor-pointer transition-colors ${
                               currentMap?.id === map.id 
                                 ? 'bg-primary/10 border-primary/50' 
-                                : 'hover:bg-muted'
+                                : 'hover:bg-muted border-transparent'
                             }`}
                             onClick={() => loadFromHistory(map)}
                           >
@@ -326,20 +324,22 @@ const MapaMental = () => {
                           </div>
                         ))}
                       </div>
-                    </CardContent>
-                  </Card>
-                )}
-              </div>
-            </ScrollArea>
+                    </div>
+                  )}
+                </div>
+              </ScrollArea>
+            </Card>
           </aside>
 
           {/* Main Canvas */}
           <div className="lg:col-span-3">
-            <MindMapCanvas 
-              data={currentMap}
-              onDataChange={handleMapChange}
-              isGenerating={isGenerating}
-            />
+            <Card className="overflow-hidden rounded-2xl border-0 shadow-lg bg-card/80 backdrop-blur p-4">
+              <MindMapCanvas 
+                data={currentMap}
+                onDataChange={handleMapChange}
+                isGenerating={isGenerating}
+              />
+            </Card>
           </div>
         </div>
       </div>

@@ -647,7 +647,7 @@ export const PartialSurvey = ({ mindMapId, mindMapTopic }: PartialSurveyProps) =
 
           {/* Actions Bar */}
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <Button variant="outline" size="sm" onClick={addManualItem} className="gap-1 text-foreground">
+            <Button variant="secondary" size="sm" onClick={addManualItem} className="gap-1">
               <Plus className="h-4 w-4" />
               Adicionar Item
             </Button>

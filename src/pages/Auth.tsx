@@ -150,7 +150,7 @@ const Auth = () => {
     if (started) {
       toast({
         title: 'Modo Degustação Ativado!',
-        description: `Você tem 3 minutos para explorar. Restam ${usesRemaining - 1} usos esta semana.`
+        description: `Você tem 10 horas para explorar. Restam ${usesRemaining - 1} usos esta semana.`
       });
       navigate('/');
     }
@@ -372,7 +372,7 @@ const Auth = () => {
                   <PlayCircle className="h-4 w-4" />
                   {weeklyLimitReached 
                     ? 'Limite semanal atingido' 
-                    : 'Experimentar Grátis (3 min)'}
+                    : 'Experimentar Grátis (10 horas)'}
                 </Button>
                 <p className="text-xs text-center text-muted-foreground">
                   {weeklyLimitReached 

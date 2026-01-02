@@ -71,7 +71,7 @@ export const PartialSurvey = ({ mindMapId, mindMapTopic }: PartialSurveyProps) =
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [isExtracting, setIsExtracting] = useState(false);
   const [items, setItems] = useState<SurveyItem[]>([]);

@@ -12,47 +12,47 @@
 @layer base {
   :root {
     /* Liquid Glass Blue Theme */
-    --background: 210 60% 55%;
-    --foreground: 210 20% 98%;
+    --background: 210 30% 98%;
+    --foreground: 210 40% 15%;
 
     /* Glass cards with transparency */
-    --card: 210 40% 98%;
+    --card: 0 0% 100%;
     --card-foreground: 210 40% 15%;
 
-    --popover: 210 40% 98%;
+    --popover: 0 0% 100%;
     --popover-foreground: 210 40% 15%;
 
     /* Primary accent - vibrant blue */
     --primary: 210 100% 50%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 210 30% 90%;
+    --secondary: 210 30% 94%;
     --secondary-foreground: 210 40% 20%;
 
-    --muted: 210 20% 92%;
+    --muted: 210 20% 96%;
     --muted-foreground: 210 20% 40%;
 
-    --accent: 210 60% 85%;
+    --accent: 210 60% 92%;
     --accent-foreground: 210 100% 40%;
 
     --destructive: 0 72% 50%;
     --destructive-foreground: 0 0% 100%;
 
-    /* Glass borders - subtle white with transparency */
-    --border: 210 30% 85%;
-    --input: 210 30% 92%;
+    /* Glass borders - subtle with transparency */
+    --border: 210 30% 88%;
+    --input: 210 30% 96%;
     --ring: 210 100% 50%;
 
     --radius: 1rem;
 
     /* Sidebar glass effect */
-    --sidebar-background: 210 40% 96%;
+    --sidebar-background: 210 40% 97%;
     --sidebar-foreground: 210 40% 15%;
     --sidebar-primary: 210 100% 50%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 210 60% 90%;
+    --sidebar-accent: 210 60% 94%;
     --sidebar-accent-foreground: 210 100% 40%;
-    --sidebar-border: 210 30% 88%;
+    --sidebar-border: 210 30% 90%;
     --sidebar-ring: 210 100% 50%;
 
     /* Chart colors - vibrant */

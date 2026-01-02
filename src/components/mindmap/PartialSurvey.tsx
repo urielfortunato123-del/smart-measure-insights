@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -36,6 +36,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useAppData } from '@/contexts/AppDataContext';
 
 interface SurveyItem {
   id: string;
@@ -71,6 +72,7 @@ export const PartialSurvey = ({ mindMapId, mindMapTopic }: PartialSurveyProps) =
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { setSurveyItems: setGlobalSurveyItems, setSurveyName: setGlobalSurveyName, setUploadedFileName } = useAppData();
   const [isExpanded, setIsExpanded] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [isExtracting, setIsExtracting] = useState(false);
@@ -87,6 +89,21 @@ export const PartialSurvey = ({ mindMapId, mindMapTopic }: PartialSurveyProps) =
     client_name: '',
     date: new Date().toLocaleDateString('pt-BR')
   });
+
+  // Sync items to global context
+  useEffect(() => {
+    setGlobalSurveyItems(items);
+  }, [items, setGlobalSurveyItems]);
+
+  // Sync survey name to global context
+  useEffect(() => {
+    setGlobalSurveyName(surveyName || `Levantamento - ${mindMapTopic}`);
+  }, [surveyName, mindMapTopic, setGlobalSurveyName]);
+
+  // Sync uploaded file name to global context
+  useEffect(() => {
+    setUploadedFileName(uploadedFile?.name || null);
+  }, [uploadedFile, setUploadedFileName]);
 
   const generateId = () => `item-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 

@@ -10,7 +10,6 @@ import { SmartDataTable } from '@/components/dashboard/SmartDataTable';
 import { AlertsPanel } from '@/components/dashboard/AlertsPanel';
 import { AlertDetailModal } from '@/components/dashboard/AlertDetailModal';
 import { UpdatesNotification } from '@/components/updates/UpdatesNotification';
-import { DemoTimer } from '@/components/demo/DemoTimer';
 import { DemoExpiredModal } from '@/components/demo/DemoExpiredModal';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
@@ -197,11 +196,6 @@ const Index = () => {
 
   return (
     <div className="flex min-h-screen w-full liquid-background">
-      {/* Demo Mode Timer */}
-      {isDemoMode && !demoExpired && (
-        <DemoTimer formattedTime={formattedTime} timeRemaining={timeRemaining} usesRemaining={usesRemaining} maxWeeklyUses={maxWeeklyUses} />
-      )}
-      
       {/* Demo Expired Modal */}
       <DemoExpiredModal open={demoExpired && !user} />
       <ResizablePanelGroup 
@@ -216,7 +210,17 @@ const Index = () => {
         <ResizablePanel defaultSize={isHidden ? 100 : 85} minSize={50}>
       
       <main className="flex-1 flex flex-col min-h-screen overflow-hidden bg-white/5 backdrop-blur-sm">
-        <DashboardHeader lastUpdate={lastUpdate} onRefresh={handleRefresh} />
+        <DashboardHeader 
+          lastUpdate={lastUpdate} 
+          onRefresh={handleRefresh} 
+          demoProps={{
+            isDemoMode: isDemoMode && !demoExpired,
+            formattedTime,
+            timeRemaining,
+            usesRemaining,
+            maxWeeklyUses
+          }}
+        />
         
         <ScrollArea className="flex-1">
           <div className="p-6 space-y-6">

@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Download, RefreshCw, Calendar, Image, Loader2, LogOut, User, GitCompareArrows, Sparkles, BookOpen, Brain } from 'lucide-react';
+import { Download, RefreshCw, Calendar, Image, Loader2, LogOut, User, GitCompareArrows, Sparkles, BookOpen, Brain, Clock, Lock, Gift } from 'lucide-react';
 import { UserGuide } from '@/components/guide/UserGuide';
 import { AdminButton } from '@/components/admin/AdminButton';
 import { useToast } from '@/hooks/use-toast';
@@ -18,12 +18,21 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
+interface DemoTimerProps {
+  formattedTime?: string;
+  timeRemaining?: number;
+  usesRemaining?: number;
+  maxWeeklyUses?: number;
+  isDemoMode?: boolean;
+}
+
 interface DashboardHeaderProps {
   lastUpdate: Date;
   onRefresh: () => void;
+  demoProps?: DemoTimerProps;
 }
 
-export const DashboardHeader = ({ lastUpdate, onRefresh }: DashboardHeaderProps) => {
+export const DashboardHeader = ({ lastUpdate, onRefresh, demoProps }: DashboardHeaderProps) => {
   const [isExporting, setIsExporting] = useState(false);
   const [guideOpen, setGuideOpen] = useState(false);
   const { toast } = useToast();
@@ -101,6 +110,26 @@ export const DashboardHeader = ({ lastUpdate, onRefresh }: DashboardHeaderProps)
         <Badge variant="outline" className="border-white/30 bg-white/10 text-primary text-xs shrink-0 hidden sm:inline-flex backdrop-blur-sm">
           Medição
         </Badge>
+        
+        {/* Demo Mode Timer - inline in header */}
+        {demoProps?.isDemoMode && (
+          <div className="flex items-center gap-2 ml-2">
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/10 border border-primary/20 backdrop-blur-sm">
+              <Clock className="h-3.5 w-3.5 text-primary" />
+              <span className="font-mono font-medium text-xs text-primary">
+                {demoProps.formattedTime}
+              </span>
+              <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-primary/30 text-primary bg-transparent">
+                <Lock className="h-2.5 w-2.5 mr-0.5" />
+                DEGUSTAÇÃO
+              </Badge>
+            </div>
+            <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+              <Gift className="h-3 w-3" />
+              <span>{demoProps.usesRemaining}/{demoProps.maxWeeklyUses}</span>
+            </div>
+          </div>
+        )}
       </div>
       
       <TooltipProvider delayDuration={300}>

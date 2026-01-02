@@ -585,8 +585,8 @@ export const PartialSurvey = ({ mindMapId, mindMapTopic }: PartialSurveyProps) =
 
   return (
     <>
-      <Card className="lg:col-span-2">
-        <CardHeader className="pb-3">
+      <Card className="lg:col-span-2 flex flex-col h-full max-h-[calc(100vh-12rem)]">
+        <CardHeader className="pb-3 shrink-0">
           <div className="flex items-center justify-between">
             <CardTitle className="text-lg flex items-center gap-2">
               <ClipboardList className="h-5 w-5 text-primary" />
@@ -597,15 +597,16 @@ export const PartialSurvey = ({ mindMapId, mindMapTopic }: PartialSurveyProps) =
             </Button>
           </div>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-4 flex-1 flex flex-col overflow-hidden">
           <Input
             placeholder="Nome do levantamento (opcional)"
             value={surveyName}
             onChange={(e) => setSurveyName(e.target.value)}
+            className="shrink-0"
           />
 
           {/* File Upload */}
-          <div className="flex gap-2">
+          <div className="flex gap-2 shrink-0">
             <div className="flex-1">
               <input
                 type="file"
@@ -646,7 +647,7 @@ export const PartialSurvey = ({ mindMapId, mindMapTopic }: PartialSurveyProps) =
           </div>
 
           {/* Actions Bar */}
-          <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex flex-wrap items-center justify-between gap-2 shrink-0">
             <Button variant="outline" size="sm" onClick={addManualItem} className="gap-1 !text-primary border-primary/30 bg-white/50">
               <Plus className="h-4 w-4" />
               Adicionar Item
@@ -667,7 +668,7 @@ export const PartialSurvey = ({ mindMapId, mindMapTopic }: PartialSurveyProps) =
 
           {/* Items List */}
           {items.length > 0 && (
-            <ScrollArea className="h-[350px]">
+            <ScrollArea className="flex-1 min-h-0">
               <div className="space-y-3 pr-4">
                 {items.map((item) => (
                   <Card key={item.id} className={`p-3 ${item.is_selected ? 'ring-2 ring-primary' : ''}`}>

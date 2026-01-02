@@ -576,7 +576,7 @@ export const PartialSurvey = ({ mindMapId, mindMapTopic }: PartialSurveyProps) =
                 Extraia quantitativos do projeto e gere orçamentos
               </p>
             </div>
-            <Badge variant="outline">Novo</Badge>
+            <Badge variant="outline" className="text-card-foreground">Novo</Badge>
           </div>
         </CardContent>
       </Card>
@@ -647,14 +647,14 @@ export const PartialSurvey = ({ mindMapId, mindMapTopic }: PartialSurveyProps) =
 
           {/* Actions Bar */}
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <Button variant="outline" size="sm" onClick={addManualItem} className="gap-1">
+            <Button variant="secondary" size="sm" onClick={addManualItem} className="gap-1">
               <Plus className="h-4 w-4" />
               Adicionar Item
             </Button>
             <div className="flex items-center gap-2">
               {items.length > 0 && (
                 <>
-                  <Button variant="ghost" size="sm" onClick={selectAllItems}>
+                  <Button variant="ghost" size="sm" onClick={selectAllItems} className="text-card-foreground">
                     {items.every(item => item.is_selected) ? 'Desmarcar' : 'Selecionar'} Todos
                   </Button>
                   <Badge variant="secondary">
@@ -792,11 +792,11 @@ export const PartialSurvey = ({ mindMapId, mindMapTopic }: PartialSurveyProps) =
               </div>
 
               <div className="flex flex-wrap gap-2">
-                <Button onClick={saveSurvey} disabled={isLoading} variant="outline" className="gap-2">
+                <Button onClick={saveSurvey} disabled={isLoading} variant="secondary" className="gap-2">
                   {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
                   Salvar
                 </Button>
-                <Button onClick={() => setPdfDialogOpen(true)} variant="outline" className="gap-2">
+                <Button onClick={() => setPdfDialogOpen(true)} variant="secondary" className="gap-2">
                   <Printer className="h-4 w-4" />
                   Gerar PDF
                 </Button>
@@ -865,7 +865,7 @@ export const PartialSurvey = ({ mindMapId, mindMapTopic }: PartialSurveyProps) =
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setPdfDialogOpen(false)}>
+            <Button variant="secondary" onClick={() => setPdfDialogOpen(false)}>
               Cancelar
             </Button>
             <Button onClick={generatePDF} disabled={isGeneratingPdf} className="gap-2">

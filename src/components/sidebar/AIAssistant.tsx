@@ -3,9 +3,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Bot, Send, User, Sparkles, Loader2, Brain, ClipboardList, Copy, Check } from 'lucide-react';
+import { Bot, Send, User, Sparkles, Loader2, Brain, ClipboardList, Copy, Check, Calculator } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAppData } from '@/contexts/AppDataContext';
+import { useAuth } from '@/hooks/useAuth';
 
 interface Message {
   id: string;
@@ -15,17 +16,21 @@ interface Message {
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/analyze-measurement`;
 
+const BUDGET_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-budget`;
+
 export const AIAssistant = () => {
   const { getFullContext, measurementData, currentMindMap, surveyItems } = useAppData();
+  const { user } = useAuth();
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
       role: 'assistant',
-      content: '👋 Olá! Sou seu assistente inteligente.\n\n📊 Tenho acesso a:\n• Dados de medição carregados\n• Mapa mental ativo\n• Levantamento de quantitativos\n\nPergunte qualquer coisa sobre os dados do programa!'
+      content: '👋 Olá! Sou seu assistente inteligente.\n\n📊 Tenho acesso a:\n• Dados de medição carregados\n• Mapa mental ativo\n• Levantamento de quantitativos\n\n💰 Posso gerar orçamentos automaticamente!\n\nPergunte qualquer coisa sobre os dados do programa!'
     }
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isGeneratingBudget, setIsGeneratingBudget] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
@@ -169,6 +174,98 @@ export const AIAssistant = () => {
     { label: 'Analisar quantitativos', action: 'Analise o levantamento de quantitativos' }
   ];
 
+  const handleGenerateBudget = async () => {
+    if (!user || surveyItems.length === 0) {
+      toast({
+        title: 'Sem dados',
+        description: 'Carregue um levantamento para gerar orçamento',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    setIsGeneratingBudget(true);
+    
+    // Add user message
+    const userMsg: Message = {
+      id: Date.now().toString(),
+      role: 'user',
+      content: '💰 Gerar orçamento automático'
+    };
+    setMessages(prev => [...prev, userMsg]);
+
+    try {
+      const fullContext = getFullContext();
+      
+      const resp = await fetch(BUDGET_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({
+          surveyItems: fullContext.survey?.items || [],
+          tpuData: [], // TPU data if available
+          userId: user.id
+        }),
+      });
+
+      const data = await resp.json();
+
+      if (!resp.ok || !data.success) {
+        throw new Error(data.error || 'Erro ao gerar orçamento');
+      }
+
+      // Format results message
+      const { results, summary } = data;
+      let resultMsg = `📊 **Orçamento Gerado**\n\n`;
+      resultMsg += `✅ Preços encontrados: ${summary.prices_found}/${summary.total_items} (${summary.coverage_percentage}%)\n\n`;
+
+      if (results.length > 0) {
+        resultMsg += `**Itens:**\n`;
+        results.slice(0, 10).forEach((r: { description: string; unit_price: number; source: string }) => {
+          const price = r.unit_price > 0 
+            ? `R$ ${r.unit_price.toFixed(2)} (${r.source})`
+            : '❌ Não encontrado';
+          resultMsg += `• ${r.description.substring(0, 30)}...: ${price}\n`;
+        });
+        
+        if (results.length > 10) {
+          resultMsg += `\n... e mais ${results.length - 10} itens`;
+        }
+      }
+
+      const assistantMsg: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: resultMsg
+      };
+      setMessages(prev => [...prev, assistantMsg]);
+
+      toast({
+        title: 'Orçamento gerado!',
+        description: `${summary.prices_found} preços encontrados de ${summary.total_items} itens`,
+      });
+
+    } catch (error) {
+      console.error('Budget generation error:', error);
+      const errorMsg: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: `❌ Erro ao gerar orçamento: ${error instanceof Error ? error.message : 'Erro desconhecido'}`
+      };
+      setMessages(prev => [...prev, errorMsg]);
+      
+      toast({
+        title: 'Erro',
+        description: error instanceof Error ? error.message : 'Erro ao gerar orçamento',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsGeneratingBudget(false);
+    }
+  };
+
   const handleCopy = async (messageId: string, content: string) => {
     try {
       await navigator.clipboard.writeText(content);
@@ -277,6 +374,23 @@ export const AIAssistant = () => {
             )}
           </div>
         </ScrollArea>
+
+        {/* Budget generation button */}
+        {dataContext.hasSurvey && (
+          <Button
+            variant="default"
+            size="sm"
+            className="mt-2 h-7 text-xs w-full gap-1"
+            onClick={handleGenerateBudget}
+            disabled={isLoading || isGeneratingBudget}
+          >
+            {isGeneratingBudget ? (
+              <><Loader2 className="h-3 w-3 animate-spin" /> Gerando...</>
+            ) : (
+              <><Calculator className="h-3 w-3" /> Gerar Orçamento</>
+            )}
+          </Button>
+        )}
 
         {/* Quick actions */}
         {hasData && messages.length <= 2 && (

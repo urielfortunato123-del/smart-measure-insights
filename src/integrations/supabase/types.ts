@@ -245,6 +245,42 @@ export type Database = {
           },
         ]
       }
+      price_history: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          item_code: string | null
+          reference_date: string | null
+          source: string
+          unit: string | null
+          unit_price: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          id?: string
+          item_code?: string | null
+          reference_date?: string | null
+          source: string
+          unit?: string | null
+          unit_price: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          item_code?: string | null
+          reference_date?: string | null
+          source?: string
+          unit?: string | null
+          unit_price?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string

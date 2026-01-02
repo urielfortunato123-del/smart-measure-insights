@@ -192,15 +192,15 @@ const MapaMental = () => {
 
       {/* Main Content */}
       <div className="container py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <div className="flex flex-col lg:flex-row gap-6">
           {/* Sidebar - Input and History */}
-          <aside className="lg:col-span-1 w-full">
+          <aside className="w-full lg:w-80 shrink-0">
             <Card className="overflow-hidden rounded-2xl border-0 shadow-lg bg-card/80 backdrop-blur">
-              <ScrollArea className="h-[calc(100vh-8rem)]">
-                <div className="py-5 pl-5 pr-9 w-full">
+              <ScrollArea className="h-auto lg:h-[calc(100vh-8rem)]">
+                <div className="p-5 space-y-4">
                   {/* Input Section */}
-                  <div className="bg-muted/30 rounded-xl p-5 space-y-3">
-                    <div className="w-full">
+                  <div className="bg-muted/30 rounded-xl p-4 space-y-4">
+                    <div>
                       <label className="text-sm font-medium mb-2 block text-card-foreground">
                         Serviço de Engenharia
                       </label>
@@ -223,28 +223,26 @@ const MapaMental = () => {
                       <label className="text-sm font-medium text-card-foreground">
                         Anexar Arquivos (opcional)
                       </label>
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="file"
-                          id="file-upload"
-                          className="hidden"
-                          accept=".dwg,.pdf,.doc,.docx"
-                          multiple
-                          onChange={handleFileAttach}
-                        />
-                        <label
-                          htmlFor="file-upload"
-                          className="flex-1 flex items-center justify-center gap-2 px-3 py-2 border border-dashed border-border/50 rounded-xl cursor-pointer hover:bg-background/50 transition-colors bg-background/30"
-                        >
-                          <Upload className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-sm text-muted-foreground">DWG, PDF, Word</span>
-                        </label>
-                      </div>
+                      <input
+                        type="file"
+                        id="file-upload"
+                        className="hidden"
+                        accept=".dwg,.pdf,.doc,.docx"
+                        multiple
+                        onChange={handleFileAttach}
+                      />
+                      <label
+                        htmlFor="file-upload"
+                        className="flex items-center justify-center gap-2 px-3 py-2.5 border border-dashed border-border/50 rounded-xl cursor-pointer hover:bg-background/50 transition-colors bg-background/30"
+                      >
+                        <Upload className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm text-muted-foreground">DWG, PDF, Word</span>
+                      </label>
                       
                       {attachedFiles.length > 0 && (
-                        <div className="space-y-1">
+                        <div className="space-y-1.5">
                           {attachedFiles.map((file, index) => (
-                            <div key={index} className="flex items-center gap-2 p-2 bg-muted/50 rounded-xl">
+                            <div key={index} className="flex items-center gap-2 p-2 bg-muted/50 rounded-lg">
                               <File className="h-4 w-4 text-primary shrink-0" />
                               <span className="text-xs truncate flex-1">{file.name}</span>
                               <Button
@@ -279,14 +277,14 @@ const MapaMental = () => {
                       )}
                     </Button>
 
-                    <p className="text-xs text-muted-foreground text-center">
+                    <p className="text-xs text-muted-foreground text-center leading-relaxed">
                       A IA criará metodologia, códigos TPU, pontos de atenção e fórmulas de cálculo.
                     </p>
                   </div>
 
                   {/* History */}
                   {history.length > 0 && (
-                    <div className="mt-5 bg-muted/30 rounded-xl p-5">
+                    <div className="bg-muted/30 rounded-xl p-4">
                       <div className="flex items-center gap-2 mb-3">
                         <History className="h-4 w-4 text-card-foreground/70" />
                         <h3 className="text-sm font-medium text-card-foreground">Histórico</h3>
@@ -303,7 +301,7 @@ const MapaMental = () => {
                             onClick={() => loadFromHistory(map)}
                           >
                             <div className="flex items-start justify-between gap-2">
-                              <div className="flex-1 min-w-0 overflow-hidden">
+                              <div className="flex-1 min-w-0">
                                 <p className="text-sm font-medium truncate text-card-foreground">{map.topic}</p>
                                 <p className="text-xs text-card-foreground/70">
                                   {map.nodes.length} itens • {map.createdAt.toLocaleDateString('pt-BR')}
@@ -332,7 +330,7 @@ const MapaMental = () => {
           </aside>
 
           {/* Main Canvas */}
-          <div className="lg:col-span-3">
+          <div className="flex-1 min-w-0">
             <Card className="overflow-hidden rounded-2xl border-0 shadow-lg bg-card/80 backdrop-blur p-4">
               <MindMapCanvas 
                 data={currentMap}

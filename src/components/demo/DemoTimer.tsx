@@ -14,14 +14,14 @@ export const DemoTimer = ({ formattedTime, timeRemaining, usesRemaining, maxWeek
 
   return (
     <div className={cn(
-      "fixed top-4 right-4 z-50 flex flex-col items-end gap-2"
+      "fixed bottom-4 left-4 z-40 flex flex-col items-start gap-2 pointer-events-none"
     )}>
       {/* Main timer */}
       <div className={cn(
-        "flex items-center gap-2 px-4 py-2 rounded-full shadow-lg backdrop-blur-md transition-all duration-300",
+        "flex items-center gap-2 px-3 py-1.5 rounded-full backdrop-blur-sm transition-all duration-300 pointer-events-auto opacity-60 hover:opacity-100",
         isLow 
-          ? "bg-destructive/90 text-destructive-foreground animate-pulse" 
-          : "bg-amber-500/90 text-amber-950"
+          ? "bg-destructive/50 text-destructive-foreground animate-pulse" 
+          : "bg-muted/50 text-muted-foreground"
       )}>
         <Clock className="h-4 w-4" />
         <span className="font-mono font-bold text-sm">
@@ -37,10 +37,10 @@ export const DemoTimer = ({ formattedTime, timeRemaining, usesRemaining, maxWeek
       </div>
 
       {/* Uses remaining indicator */}
-      <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-background/80 backdrop-blur-md shadow-md border border-border">
-        <Gift className="h-3.5 w-3.5 text-primary" />
-        <span className="text-xs font-medium text-foreground">
-          {usesRemaining} de {maxWeeklyUses} usos restantes esta semana
+      <div className="flex items-center gap-2 px-2 py-1 rounded-full bg-muted/30 backdrop-blur-sm pointer-events-auto opacity-60 hover:opacity-100">
+        <Gift className="h-3 w-3 text-muted-foreground" />
+        <span className="text-xs text-muted-foreground">
+          {usesRemaining}/{maxWeeklyUses} usos
         </span>
       </div>
     </div>

@@ -95,21 +95,33 @@ export const extractTextCloud = async (
   }
 };
 
+export type OCRMode = 'auto' | 'local' | 'cloud';
+
 /**
- * Extrai texto de imagem - tenta local primeiro, depois cloud como fallback
+ * Extrai texto de imagem com modo selecionável
  */
 export const extractTextFromImage = async (
   file: File,
   onProgress?: (progress: number) => void,
-  preferCloud = false
+  mode: OCRMode = 'auto'
 ): Promise<OCRResult> => {
-  // Se preferir cloud ou arquivo > 1MB, usa cloud direto
-  if (preferCloud || file.size > 1 * 1024 * 1024) {
+  // Modo cloud: usa cloud direto
+  if (mode === 'cloud') {
+    return extractTextCloud(file, onProgress);
+  }
+
+  // Modo local: usa apenas local
+  if (mode === 'local') {
+    return extractTextLocal(file, onProgress);
+  }
+
+  // Modo auto: híbrido (local primeiro, cloud como fallback)
+  // Se arquivo > 1MB, usa cloud direto por performance
+  if (file.size > 1 * 1024 * 1024) {
     return extractTextCloud(file, onProgress);
   }
 
   try {
-    // Tenta OCR local primeiro (gratuito)
     const result = await extractTextLocal(file, onProgress);
     
     // Se confiança muito baixa, tenta cloud
@@ -130,13 +142,14 @@ export const extractTextFromImage = async (
  */
 export const processFileForOCR = async (
   file: File,
-  onProgress?: (progress: number) => void
+  onProgress?: (progress: number) => void,
+  mode: OCRMode = 'auto'
 ): Promise<OCRResult> => {
   const fileType = file.type;
 
-  // Se for imagem, usar OCR híbrido (local + cloud)
+  // Se for imagem, usar OCR com modo selecionado
   if (fileType.startsWith('image/')) {
-    return extractTextFromImage(file, onProgress);
+    return extractTextFromImage(file, onProgress, mode);
   }
 
   // Se for PDF, indicar para usar IA diretamente (Gemini lê PDFs nativamente)

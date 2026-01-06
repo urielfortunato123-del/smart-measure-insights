@@ -1,71 +1,60 @@
-import Tesseract from 'tesseract.js';
+import { supabase } from '@/integrations/supabase/client';
 
 export interface OCRResult {
   text: string;
   confidence: number;
   processingTime: number;
+  pagesProcessed?: number;
 }
 
 /**
- * Extrai texto de uma imagem usando Tesseract.js (OCR gratuito)
+ * Extrai texto de uma imagem usando OCR.space API (gratuito - 25k req/mês)
  */
 export const extractTextFromImage = async (
-  imageSource: string | File | Blob,
+  file: File,
   onProgress?: (progress: number) => void
 ): Promise<OCRResult> => {
   const startTime = Date.now();
 
   try {
-    const result = await Tesseract.recognize(
-      imageSource,
-      'por', // Português
-      {
-        logger: (m) => {
-          if (m.status === 'recognizing text' && onProgress) {
-            onProgress(Math.round(m.progress * 100));
-          }
-        },
-      }
-    );
+    onProgress?.(10);
+
+    // Convert file to base64
+    const base64 = await fileToBase64(file);
+    onProgress?.(30);
+
+    // Call OCR edge function
+    const { data, error } = await supabase.functions.invoke('ocr-extract', {
+      body: {
+        imageBase64: base64,
+        language: 'por',
+        isTable: true,
+      },
+    });
+
+    onProgress?.(90);
+
+    if (error) {
+      console.error('OCR function error:', error);
+      throw new Error(error.message || 'Erro ao processar OCR');
+    }
+
+    if (!data.success) {
+      throw new Error(data.error || 'Falha no OCR');
+    }
+
+    onProgress?.(100);
 
     return {
-      text: result.data.text,
-      confidence: result.data.confidence,
+      text: data.text,
+      confidence: data.confidence,
       processingTime: Date.now() - startTime,
+      pagesProcessed: data.pagesProcessed,
     };
   } catch (error) {
     console.error('OCR Error:', error);
     throw new Error('Falha ao processar imagem com OCR');
   }
-};
-
-/**
- * Converte arquivo PDF para imagens e extrai texto
- * Usa a API de canvas do navegador para renderizar páginas do PDF
- */
-export const extractTextFromPDF = async (
-  file: File,
-  onProgress?: (progress: number, page: number, totalPages: number) => void
-): Promise<OCRResult> => {
-  const startTime = Date.now();
-  
-  // Para PDFs, vamos converter para base64 e enviar direto para IA
-  // pois Tesseract não processa PDF diretamente
-  // A IA Gemini já tem capacidade nativa de ler PDFs
-  
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      // Retornar indicador de que deve usar IA diretamente
-      resolve({
-        text: '__PDF_USE_AI_DIRECTLY__',
-        confidence: 100,
-        processingTime: Date.now() - startTime,
-      });
-    };
-    reader.onerror = () => reject(new Error('Falha ao ler arquivo PDF'));
-    reader.readAsDataURL(file);
-  });
 };
 
 /**
@@ -76,18 +65,50 @@ export const processFileForOCR = async (
   onProgress?: (progress: number) => void
 ): Promise<OCRResult> => {
   const fileType = file.type;
-  
-  // Se for imagem, usar Tesseract OCR gratuito
+
+  // Check file size (OCR.space free tier limit is 1MB)
+  const maxSize = 1 * 1024 * 1024; // 1MB
+  if (file.size > maxSize) {
+    console.warn('File too large for free OCR, will use AI directly');
+    return {
+      text: '__USE_AI_DIRECTLY__',
+      confidence: 100,
+      processingTime: 0,
+    };
+  }
+
+  // Se for imagem, usar OCR.space gratuito
   if (fileType.startsWith('image/')) {
     return extractTextFromImage(file, onProgress);
   }
-  
-  // Se for PDF, indicar para usar IA diretamente (Gemini lê PDFs)
+
+  // Se for PDF, indicar para usar IA diretamente (Gemini lê PDFs nativamente)
   if (fileType === 'application/pdf') {
-    return extractTextFromPDF(file, onProgress);
+    return {
+      text: '__PDF_USE_AI_DIRECTLY__',
+      confidence: 100,
+      processingTime: 0,
+    };
   }
-  
+
   throw new Error(`Tipo de arquivo não suportado: ${fileType}`);
+};
+
+/**
+ * Converte File para base64 (sem o prefixo data:...)
+ */
+const fileToBase64 = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result as string;
+      // Remove o prefixo "data:image/...;base64,"
+      const base64 = result.split(',')[1];
+      resolve(base64);
+    };
+    reader.onerror = () => reject(new Error('Falha ao ler arquivo'));
+    reader.readAsDataURL(file);
+  });
 };
 
 /**

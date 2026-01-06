@@ -2,19 +2,24 @@ import { useState, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 import { 
   Upload, 
   FileSpreadsheet, 
   Sparkles, 
   ArrowLeft,
   Loader2,
-  RefreshCw
+  RefreshCw,
+  Image,
+  ScanLine
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import * as XLSX from 'xlsx';
 import { ExcelSpreadsheet } from '@/components/analysis/ExcelSpreadsheet';
 import { AnalysisSummary } from '@/components/analysis/AnalysisSummary';
+import { OCRModeSelector, OCRMode } from '@/components/sidebar/OCRModeSelector';
+import { processFileForOCR, cleanOCRText } from '@/lib/ocrService';
 
 export interface CellError {
   row: number;
@@ -42,13 +47,73 @@ const Analise = () => {
   const [fileName, setFileName] = useState<string>('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
+  const [ocrMode, setOcrMode] = useState<OCRMode>('auto');
+  const [ocrProgress, setOcrProgress] = useState(0);
+  const [isOcrProcessing, setIsOcrProcessing] = useState(false);
   const { toast } = useToast();
 
   const handleFileUpload = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
+    const isImage = file.type.startsWith('image/');
+    
     try {
+      // Handle image files with OCR
+      if (isImage) {
+        setIsOcrProcessing(true);
+        setOcrProgress(0);
+        
+        toast({
+          title: 'Processando imagem...',
+          description: 'Usando OCR para extrair tabela',
+        });
+
+        try {
+          const ocrResult = await processFileForOCR(
+            file,
+            (progress) => setOcrProgress(progress),
+            ocrMode
+          );
+          
+          const cleanedText = cleanOCRText(ocrResult.text);
+          
+          // Try to parse as table (basic CSV-like parsing)
+          const lines = cleanedText.split('\n').filter(l => l.trim());
+          if (lines.length > 0) {
+            const parsedData = lines.map(line => 
+              line.split(/\s{2,}|\t/).map(cell => cell.trim())
+            );
+            
+            if (parsedData.length > 0) {
+              setHeaders(parsedData[0].map(String));
+              setData(parsedData.slice(1));
+              setFileName(file.name);
+              setAnalysisResult(null);
+              
+              toast({
+                title: "Texto extraído via OCR!",
+                description: `${parsedData.length - 1} linhas extraídas. Confiança: ${ocrResult.confidence.toFixed(0)}%`,
+              });
+            }
+          } else {
+            throw new Error('Não foi possível extrair tabela da imagem');
+          }
+        } catch (ocrError) {
+          console.error('OCR error:', ocrError);
+          toast({
+            title: "Erro no OCR",
+            description: ocrError instanceof Error ? ocrError.message : "Falha ao processar imagem",
+            variant: "destructive"
+          });
+        } finally {
+          setIsOcrProcessing(false);
+          setOcrProgress(0);
+        }
+        return;
+      }
+
+      // Handle Excel/CSV files
       const buffer = await file.arrayBuffer();
       const workbook = XLSX.read(buffer, { type: 'array' });
       const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
@@ -73,7 +138,7 @@ const Analise = () => {
         variant: "destructive"
       });
     }
-  }, [toast]);
+  }, [toast, ocrMode]);
 
   const runAIAnalysis = async () => {
     if (data.length === 0) return;
@@ -188,25 +253,59 @@ const Analise = () => {
                     <Upload className="h-12 w-12 text-primary" />
                   </div>
                 </div>
-                <h2 className="text-xl font-semibold mt-6 mb-2 text-card-foreground">Carregar Planilha</h2>
-                <p className="text-card-foreground/70 text-center mb-6 max-w-sm">
-                  Arraste uma planilha ou clique para selecionar. 
-                  Suporta arquivos Excel (.xlsx, .xls) e CSV.
+                <h2 className="text-xl font-semibold mt-6 mb-2 text-card-foreground">Carregar Planilha ou Imagem</h2>
+                <p className="text-card-foreground/70 text-center mb-4 max-w-sm">
+                  Arraste um arquivo ou clique para selecionar. 
+                  Suporta Excel (.xlsx, .xls), CSV e imagens com OCR.
                 </p>
+                
+                {/* OCR Mode Selector */}
+                <div className="mb-4 w-full max-w-xs">
+                  <OCRModeSelector
+                    value={ocrMode}
+                    onChange={setOcrMode}
+                    disabled={isOcrProcessing}
+                  />
+                </div>
+
+                {/* OCR Progress */}
+                {isOcrProcessing && (
+                  <div className="w-full max-w-xs mb-4 space-y-2">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="flex items-center gap-2 text-muted-foreground">
+                        <ScanLine className="h-4 w-4 animate-pulse" />
+                        Processando OCR...
+                      </span>
+                      <span className="text-primary font-medium">{ocrProgress}%</span>
+                    </div>
+                    <Progress value={ocrProgress} className="h-2" />
+                  </div>
+                )}
+
                 <label>
                   <input
                     type="file"
-                    accept=".xlsx,.xls,.csv"
+                    accept=".xlsx,.xls,.csv,image/*"
                     onChange={handleFileUpload}
                     className="hidden"
+                    disabled={isOcrProcessing}
                   />
-                  <Button asChild>
+                  <Button asChild disabled={isOcrProcessing}>
                     <span className="cursor-pointer gap-2">
-                      <FileSpreadsheet className="h-4 w-4" />
+                      {isOcrProcessing ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <FileSpreadsheet className="h-4 w-4" />
+                      )}
                       Selecionar Arquivo
                     </span>
                   </Button>
                 </label>
+                
+                <div className="flex items-center gap-2 mt-3 text-xs text-muted-foreground">
+                  <Image className="h-3 w-3" />
+                  <span>Imagens serão processadas com OCR</span>
+                </div>
               </CardContent>
             </Card>
           </div>

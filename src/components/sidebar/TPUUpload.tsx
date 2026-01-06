@@ -3,13 +3,16 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { Upload, Database, X, Loader2, FileText, FileSpreadsheet, Check } from 'lucide-react';
+import { Upload, Database, X, Loader2, FileText, FileSpreadsheet, Check, Image } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { TPUEntry, TPUImportResult } from '@/types/tpu';
 import { parseTPUExcel, parseTPUFromText, formatTPUPrice } from '@/lib/tpuParser';
 import * as XLSX from 'xlsx';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Progress } from '@/components/ui/progress';
+import { processFileForOCR, cleanOCRText, OCRMode } from '@/lib/ocrService';
+import { OCRModeSelector } from './OCRModeSelector';
 
 interface TPUUploadProps {
   onTPULoaded: (entries: TPUEntry[]) => void;
@@ -24,6 +27,9 @@ export const TPUUpload = ({ onTPULoaded }: TPUUploadProps) => {
   const [origem, setOrigem] = useState<TPUOrigem>('DER-SP');
   const [tipo, setTipo] = useState<TPUTipo>('nao_desonerado');
   const [importResult, setImportResult] = useState<TPUImportResult | null>(null);
+  const [ocrProgress, setOcrProgress] = useState(0);
+  const [ocrMode, setOcrMode] = useState<OCRMode>('auto');
+  const [isOcrProcessing, setIsOcrProcessing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
@@ -34,11 +40,12 @@ export const TPUUpload = ({ onTPULoaded }: TPUUploadProps) => {
     const fileName = selectedFile.name.toLowerCase();
     const isExcel = fileName.endsWith('.xlsx') || fileName.endsWith('.xls');
     const isPDF = fileName.endsWith('.pdf');
+    const isImage = selectedFile.type.startsWith('image/');
 
-    if (!isExcel && !isPDF) {
+    if (!isExcel && !isPDF && !isImage) {
       toast({
         title: 'Formato inválido',
-        description: 'Por favor, selecione um arquivo .xlsx, .xls ou .pdf',
+        description: 'Por favor, selecione um arquivo .xlsx, .xls, .pdf ou imagem',
         variant: 'destructive'
       });
       return;
@@ -55,29 +62,60 @@ export const TPUUpload = ({ onTPULoaded }: TPUUploadProps) => {
         const data = await selectedFile.arrayBuffer();
         const workbook = XLSX.read(data, { type: 'array' });
         result = parseTPUExcel(workbook);
-      } else {
-        // For PDF, we need to read as text or use a PDF parser
-        // Since we don't have a PDF parser client-side, show info message
+      } else if (isImage || isPDF) {
+        // Use OCR for images and PDFs
+        setIsOcrProcessing(true);
+        setOcrProgress(0);
+        
         toast({
-          title: 'PDF detectado',
-          description: 'Para melhor precisão, recomendamos usar o arquivo Excel. PDFs requerem processamento adicional.',
-          variant: 'default'
+          title: isImage ? 'Processando imagem...' : 'Processando PDF...',
+          description: 'Usando OCR para extrair texto',
         });
-        
-        // Try to read PDF as text (basic extraction)
-        const text = await selectedFile.text();
-        result = parseTPUFromText(text);
-        
-        if (result.entries.length === 0) {
+
+        try {
+          const ocrResult = await processFileForOCR(
+            selectedFile,
+            (progress) => setOcrProgress(progress),
+            ocrMode
+          );
+          
+          // If PDF needs AI directly, show message
+          if (ocrResult.text === '__PDF_USE_AI_DIRECTLY__') {
+            toast({
+              title: 'PDF detectado',
+              description: 'PDFs serão processados diretamente pela IA. Use Excel para melhor precisão.',
+              variant: 'default'
+            });
+            setIsLoading(false);
+            setIsOcrProcessing(false);
+            setFile(null);
+            return;
+          }
+          
+          const cleanedText = cleanOCRText(ocrResult.text);
+          result = parseTPUFromText(cleanedText);
+          
           toast({
-            title: 'PDF não suportado diretamente',
-            description: 'Por favor, use o arquivo Excel (.xlsx) para importar a TPU. PDFs binários não podem ser lidos diretamente.',
+            title: 'OCR concluído!',
+            description: `Confiança: ${ocrResult.confidence.toFixed(0)}% (${ocrResult.method})`,
+          });
+        } catch (ocrError) {
+          console.error('OCR error:', ocrError);
+          toast({
+            title: 'Erro no OCR',
+            description: 'Não foi possível processar o arquivo. Tente outro formato.',
             variant: 'destructive'
           });
           setIsLoading(false);
+          setIsOcrProcessing(false);
           setFile(null);
           return;
+        } finally {
+          setIsOcrProcessing(false);
+          setOcrProgress(0);
         }
+      } else {
+        throw new Error('Formato não suportado');
       }
 
       // Update tipo based on detection
@@ -152,12 +190,30 @@ export const TPUUpload = ({ onTPULoaded }: TPUUploadProps) => {
           <input
             ref={fileInputRef}
             type="file"
-            accept=".xlsx,.xls,.pdf"
+            accept=".xlsx,.xls,.pdf,image/*"
             onChange={handleFileChange}
             className="hidden"
             id="tpu-upload"
           />
           
+          {/* OCR Mode Selector */}
+          <OCRModeSelector
+            value={ocrMode}
+            onChange={setOcrMode}
+            disabled={isLoading || isOcrProcessing}
+          />
+
+          {/* OCR Progress */}
+          {isOcrProcessing && (
+            <div className="space-y-1">
+              <div className="flex items-center justify-between text-[10px]">
+                <span className="text-muted-foreground">Processando OCR...</span>
+                <span className="text-primary">{ocrProgress}%</span>
+              </div>
+              <Progress value={ocrProgress} className="h-1" />
+            </div>
+          )}
+
           {!file ? (
             <label 
               htmlFor="tpu-upload"
@@ -172,7 +228,7 @@ export const TPUUpload = ({ onTPULoaded }: TPUUploadProps) => {
                 Clique para upload
               </span>
               <span className="text-[10px] text-muted-foreground text-center">
-                .xlsx, .pdf (DER, DNIT, SINAPI)
+                .xlsx, .pdf, imagem
               </span>
             </label>
           ) : (

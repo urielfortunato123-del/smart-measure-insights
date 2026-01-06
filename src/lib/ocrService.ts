@@ -1,16 +1,55 @@
 import { supabase } from '@/integrations/supabase/client';
+import Tesseract from 'tesseract.js';
 
 export interface OCRResult {
   text: string;
   confidence: number;
   processingTime: number;
   pagesProcessed?: number;
+  method?: 'local' | 'cloud';
 }
 
 /**
- * Extrai texto de uma imagem usando OCR.space API (gratuito - 25k req/mês)
+ * Extrai texto usando Tesseract.js local (gratuito, sem limites)
  */
-export const extractTextFromImage = async (
+export const extractTextLocal = async (
+  file: File,
+  onProgress?: (progress: number) => void
+): Promise<OCRResult> => {
+  const startTime = Date.now();
+
+  try {
+    onProgress?.(5);
+
+    const imageUrl = URL.createObjectURL(file);
+    
+    const result = await Tesseract.recognize(imageUrl, 'por', {
+      logger: (m) => {
+        if (m.status === 'recognizing text' && m.progress) {
+          onProgress?.(10 + Math.round(m.progress * 80));
+        }
+      },
+    });
+
+    URL.revokeObjectURL(imageUrl);
+    onProgress?.(100);
+
+    return {
+      text: result.data.text,
+      confidence: result.data.confidence,
+      processingTime: Date.now() - startTime,
+      method: 'local',
+    };
+  } catch (error) {
+    console.error('Local OCR Error:', error);
+    throw new Error('Falha no OCR local');
+  }
+};
+
+/**
+ * Extrai texto usando OCR.space API (cloud - 25k req/mês grátis)
+ */
+export const extractTextCloud = async (
   file: File,
   onProgress?: (progress: number) => void
 ): Promise<OCRResult> => {
@@ -19,11 +58,9 @@ export const extractTextFromImage = async (
   try {
     onProgress?.(10);
 
-    // Convert file to base64
     const base64 = await fileToBase64(file);
     onProgress?.(30);
 
-    // Call OCR edge function
     const { data, error } = await supabase.functions.invoke('ocr-extract', {
       body: {
         imageBase64: base64,
@@ -50,10 +87,41 @@ export const extractTextFromImage = async (
       confidence: data.confidence,
       processingTime: Date.now() - startTime,
       pagesProcessed: data.pagesProcessed,
+      method: 'cloud',
     };
   } catch (error) {
-    console.error('OCR Error:', error);
-    throw new Error('Falha ao processar imagem com OCR');
+    console.error('Cloud OCR Error:', error);
+    throw new Error('Falha no OCR cloud');
+  }
+};
+
+/**
+ * Extrai texto de imagem - tenta local primeiro, depois cloud como fallback
+ */
+export const extractTextFromImage = async (
+  file: File,
+  onProgress?: (progress: number) => void,
+  preferCloud = false
+): Promise<OCRResult> => {
+  // Se preferir cloud ou arquivo > 1MB, usa cloud direto
+  if (preferCloud || file.size > 1 * 1024 * 1024) {
+    return extractTextCloud(file, onProgress);
+  }
+
+  try {
+    // Tenta OCR local primeiro (gratuito)
+    const result = await extractTextLocal(file, onProgress);
+    
+    // Se confiança muito baixa, tenta cloud
+    if (result.confidence < 50) {
+      console.log('Low confidence from local OCR, trying cloud...');
+      return extractTextCloud(file, onProgress);
+    }
+    
+    return result;
+  } catch (localError) {
+    console.warn('Local OCR failed, falling back to cloud:', localError);
+    return extractTextCloud(file, onProgress);
   }
 };
 
@@ -66,18 +134,7 @@ export const processFileForOCR = async (
 ): Promise<OCRResult> => {
   const fileType = file.type;
 
-  // Check file size (OCR.space free tier limit is 1MB)
-  const maxSize = 1 * 1024 * 1024; // 1MB
-  if (file.size > maxSize) {
-    console.warn('File too large for free OCR, will use AI directly');
-    return {
-      text: '__USE_AI_DIRECTLY__',
-      confidence: 100,
-      processingTime: 0,
-    };
-  }
-
-  // Se for imagem, usar OCR.space gratuito
+  // Se for imagem, usar OCR híbrido (local + cloud)
   if (fileType.startsWith('image/')) {
     return extractTextFromImage(file, onProgress);
   }
@@ -88,6 +145,7 @@ export const processFileForOCR = async (
       text: '__PDF_USE_AI_DIRECTLY__',
       confidence: 100,
       processingTime: 0,
+      method: 'local',
     };
   }
 
@@ -102,7 +160,6 @@ const fileToBase64 = (file: File): Promise<string> => {
     const reader = new FileReader();
     reader.onload = () => {
       const result = reader.result as string;
-      // Remove o prefixo "data:image/...;base64,"
       const base64 = result.split(',')[1];
       resolve(base64);
     };
@@ -116,15 +173,11 @@ const fileToBase64 = (file: File): Promise<string> => {
  */
 export const cleanOCRText = (text: string): string => {
   return text
-    // Remove múltiplos espaços
     .replace(/\s+/g, ' ')
-    // Remove quebras de linha excessivas
     .replace(/\n{3,}/g, '\n\n')
-    // Corrige caracteres comuns mal interpretados
     .replace(/[|]/g, 'I')
     .replace(/0(?=[a-zA-Z])/g, 'O')
     .replace(/1(?=[a-zA-Z])/g, 'l')
-    // Remove caracteres não imprimíveis
     .replace(/[^\x20-\x7E\xA0-\xFF\n]/g, '')
     .trim();
 };

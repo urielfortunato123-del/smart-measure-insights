@@ -4,12 +4,15 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { ArrowLeft, Brain, Sparkles, Loader2, History, Trash2, Upload, File, X } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
+import { ArrowLeft, Brain, Sparkles, Loader2, History, Trash2, Upload, File, X, ScanLine } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { MindMapCanvas } from '@/components/mindmap/MindMapCanvas';
 import { MindMapData } from '@/types/mindmap';
 import { useAppData } from '@/contexts/AppDataContext';
+import { OCRModeSelector, OCRMode } from '@/components/sidebar/OCRModeSelector';
+import { processFileForOCR, cleanOCRText } from '@/lib/ocrService';
 
 const STORAGE_KEY = 'mindmap_history';
 
@@ -24,26 +27,88 @@ const MapaMental = () => {
   const [currentMap, setCurrentMap] = useState<MindMapData | null>(null);
   const [history, setHistory] = useState<MindMapData[]>([]);
   const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
+  const [extractedTexts, setExtractedTexts] = useState<string[]>([]);
+  const [ocrMode, setOcrMode] = useState<OCRMode>('auto');
+  const [ocrProgress, setOcrProgress] = useState(0);
+  const [isOcrProcessing, setIsOcrProcessing] = useState(false);
 
   // Sync current mind map to global context
   useEffect(() => {
     setGlobalMindMap(currentMap);
   }, [currentMap, setGlobalMindMap]);
 
-  const handleFileAttach = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileAttach = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
-    if (files) {
-      const newFiles = Array.from(files).filter(file => {
-        const ext = file.name.toLowerCase().split('.').pop();
-        return ['dwg', 'pdf', 'doc', 'docx'].includes(ext || '');
+    if (!files) return;
+
+    const validFiles = Array.from(files).filter(file => {
+      const ext = file.name.toLowerCase().split('.').pop();
+      const isImage = file.type.startsWith('image/');
+      return ['dwg', 'pdf', 'doc', 'docx'].includes(ext || '') || isImage;
+    });
+
+    if (validFiles.length === 0) {
+      toast({
+        title: 'Formato inválido',
+        description: 'Arquivos suportados: DWG, PDF, Word, imagens',
+        variant: 'destructive'
       });
-      setAttachedFiles(prev => [...prev, ...newFiles]);
+      e.target.value = '';
+      return;
     }
+
+    setAttachedFiles(prev => [...prev, ...validFiles]);
+
+    // Process images and PDFs with OCR
+    for (const file of validFiles) {
+      const isImage = file.type.startsWith('image/');
+      const isPdf = file.name.toLowerCase().endsWith('.pdf');
+      
+      if (isImage || isPdf) {
+        setIsOcrProcessing(true);
+        setOcrProgress(0);
+        
+        try {
+          toast({
+            title: `Processando ${file.name}...`,
+            description: 'Extraindo texto com OCR',
+          });
+
+          const ocrResult = await processFileForOCR(
+            file,
+            (progress) => setOcrProgress(progress),
+            ocrMode
+          );
+
+          if (ocrResult.text && ocrResult.text !== '__PDF_USE_AI_DIRECTLY__') {
+            const cleanedText = cleanOCRText(ocrResult.text);
+            setExtractedTexts(prev => [...prev, cleanedText]);
+            
+            toast({
+              title: 'Texto extraído!',
+              description: `${file.name}: confiança ${ocrResult.confidence.toFixed(0)}%`,
+            });
+          }
+        } catch (error) {
+          console.error('OCR error for file:', file.name, error);
+          toast({
+            title: 'Erro no OCR',
+            description: `Falha ao processar ${file.name}`,
+            variant: 'destructive'
+          });
+        } finally {
+          setIsOcrProcessing(false);
+          setOcrProgress(0);
+        }
+      }
+    }
+
     e.target.value = '';
   };
 
   const removeFile = (index: number) => {
     setAttachedFiles(prev => prev.filter((_, i) => i !== index));
+    setExtractedTexts(prev => prev.filter((_, i) => i !== index));
   };
 
   useEffect(() => {
@@ -85,6 +150,11 @@ const MapaMental = () => {
     setIsGenerating(true);
 
     try {
+      // Combine topic with extracted text from files
+      const fullContext = extractedTexts.length > 0
+        ? `${topic.trim()}\n\nTexto extraído dos arquivos anexados:\n${extractedTexts.join('\n\n')}`
+        : topic.trim();
+
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-mindmap`,
         {
@@ -93,7 +163,7 @@ const MapaMental = () => {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
           },
-          body: JSON.stringify({ topic: topic.trim() }),
+          body: JSON.stringify({ topic: fullContext }),
         }
       );
 
@@ -215,20 +285,43 @@ const MapaMental = () => {
                 {/* File Upload */}
                 <div className="space-y-3">
                   <label className="text-sm font-medium">Anexar Arquivos (opcional)</label>
+                  
+                  {/* OCR Mode Selector */}
+                  <OCRModeSelector
+                    value={ocrMode}
+                    onChange={setOcrMode}
+                    disabled={isOcrProcessing || isGenerating}
+                  />
+
+                  {/* OCR Progress */}
+                  {isOcrProcessing && (
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="flex items-center gap-2 text-muted-foreground">
+                          <ScanLine className="h-4 w-4 animate-pulse" />
+                          Processando OCR...
+                        </span>
+                        <span className="text-primary font-medium">{ocrProgress}%</span>
+                      </div>
+                      <Progress value={ocrProgress} className="h-2" />
+                    </div>
+                  )}
+
                   <input
                     type="file"
                     id="file-upload"
                     className="hidden"
-                    accept=".dwg,.pdf,.doc,.docx"
+                    accept=".dwg,.pdf,.doc,.docx,image/*"
                     multiple
                     onChange={handleFileAttach}
+                    disabled={isOcrProcessing}
                   />
                   <label
                     htmlFor="file-upload"
-                    className="flex items-center justify-center gap-2 p-4 border-2 border-dashed border-border/60 rounded-xl cursor-pointer hover:bg-muted/50 transition-colors"
+                    className={`flex items-center justify-center gap-2 p-4 border-2 border-dashed border-border/60 rounded-xl cursor-pointer hover:bg-muted/50 transition-colors ${isOcrProcessing ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
                     <Upload className="h-5 w-5 text-muted-foreground" />
-                    <span className="text-muted-foreground">DWG, PDF, Word</span>
+                    <span className="text-muted-foreground">DWG, PDF, Word, Imagens</span>
                   </label>
 
                   {attachedFiles.length > 0 && (
@@ -237,11 +330,15 @@ const MapaMental = () => {
                         <div key={index} className="flex items-center gap-2 p-2.5 bg-muted rounded-lg">
                           <File className="h-4 w-4 text-primary shrink-0" />
                           <span className="text-sm truncate flex-1">{file.name}</span>
+                          {extractedTexts[index] && (
+                            <span className="text-xs text-green-600 bg-green-100 px-1.5 py-0.5 rounded">OCR</span>
+                          )}
                           <Button
                             variant="ghost"
                             size="icon"
                             className="h-6 w-6 shrink-0"
                             onClick={() => removeFile(index)}
+                            disabled={isOcrProcessing}
                           >
                             <X className="h-3.5 w-3.5" />
                           </Button>

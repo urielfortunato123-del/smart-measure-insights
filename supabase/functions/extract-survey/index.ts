@@ -123,7 +123,7 @@ Retorne o JSON completo com TODOS os itens.`;
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
+        model: 'google/gemini-2.5-flash-lite',
         messages,
       }),
     });

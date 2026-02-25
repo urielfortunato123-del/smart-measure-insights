@@ -160,7 +160,13 @@ Formate números como moeda brasileira (R$).`;
       }
     }
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const allMessages = [
+      { role: "system", content: systemPrompt },
+      ...messages,
+    ];
+
+    // Try Lovable AI gateway first
+    let response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${LOVABLE_API_KEY}`,
@@ -168,13 +174,31 @@ Formate números como moeda brasileira (R$).`;
       },
       body: JSON.stringify({
         model: "google/gemini-2.5-flash-lite",
-        messages: [
-          { role: "system", content: systemPrompt },
-          ...messages,
-        ],
+        messages: allMessages,
         stream: true,
       }),
     });
+
+    // Fallback to Mistral if Lovable gateway fails with 402 or 429
+    if (!response.ok && (response.status === 402 || response.status === 429)) {
+      console.log(`Lovable gateway returned ${response.status}, falling back to Mistral...`);
+      const MISTRAL_API_KEY = Deno.env.get("MISTRAL_API_KEY");
+      
+      if (MISTRAL_API_KEY) {
+        response = await fetch("https://api.mistral.ai/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${MISTRAL_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            model: "mistral-small-latest",
+            messages: allMessages,
+            stream: true,
+          }),
+        });
+      }
+    }
 
     if (!response.ok) {
       if (response.status === 429) {
@@ -183,15 +207,9 @@ Formate números como moeda brasileira (R$).`;
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-      if (response.status === 402) {
-        return new Response(JSON.stringify({ error: "Créditos insuficientes. Adicione créditos para continuar." }), {
-          status: 402,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
       const errorText = await response.text();
-      console.error("AI gateway error:", response.status, errorText);
-      return new Response(JSON.stringify({ error: "Erro ao processar com IA" }), {
+      console.error("AI error:", response.status, errorText);
+      return new Response(JSON.stringify({ error: "Erro ao processar com IA. Tente novamente." }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });

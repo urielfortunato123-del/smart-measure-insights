@@ -5,14 +5,15 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Progress } from '@/components/ui/progress';
-import { ArrowLeft, Brain, Sparkles, Loader2, History, Trash2, Upload, File, X, ScanLine } from 'lucide-react';
+import { ArrowLeft, Brain, Sparkles, Loader2, History, Trash2, Upload, File, X, ScanLine, Eye } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { MindMapCanvas } from '@/components/mindmap/MindMapCanvas';
 import { MindMapData } from '@/types/mindmap';
 import { useAppData } from '@/contexts/AppDataContext';
 import { OCRModeSelector, OCRMode } from '@/components/sidebar/OCRModeSelector';
-import { processFileForOCR, cleanOCRText } from '@/lib/ocrService';
+import { processFileForOCR, cleanOCRText, OCRResult } from '@/lib/ocrService';
+import { MarkdownPreview } from '@/components/ocr/MarkdownPreview';
 
 const STORAGE_KEY = 'mindmap_history';
 
@@ -28,6 +29,8 @@ const MapaMental = () => {
   const [history, setHistory] = useState<MindMapData[]>([]);
   const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
   const [extractedTexts, setExtractedTexts] = useState<string[]>([]);
+  const [ocrResults, setOcrResults] = useState<OCRResult[]>([]);
+  const [previewIndex, setPreviewIndex] = useState<number | null>(null);
   const [ocrMode, setOcrMode] = useState<OCRMode>('auto');
   const [ocrProgress, setOcrProgress] = useState(0);
   const [isOcrProcessing, setIsOcrProcessing] = useState(false);
@@ -81,9 +84,9 @@ const MapaMental = () => {
           );
 
           if (ocrResult.text && ocrResult.text !== '__PDF_USE_AI_DIRECTLY__') {
-            const cleanedText = cleanOCRText(ocrResult.text);
+            const cleanedText = ocrResult.format === 'markdown' ? ocrResult.text : cleanOCRText(ocrResult.text);
             setExtractedTexts(prev => [...prev, cleanedText]);
-            
+            setOcrResults(prev => [...prev, ocrResult]);
             toast({
               title: 'Texto extraído!',
               description: `${file.name}: confiança ${ocrResult.confidence.toFixed(0)}%`,
@@ -109,6 +112,9 @@ const MapaMental = () => {
   const removeFile = (index: number) => {
     setAttachedFiles(prev => prev.filter((_, i) => i !== index));
     setExtractedTexts(prev => prev.filter((_, i) => i !== index));
+    setOcrResults(prev => prev.filter((_, i) => i !== index));
+    if (previewIndex === index) setPreviewIndex(null);
+    else if (previewIndex != null && previewIndex > index) setPreviewIndex(previewIndex - 1);
   };
 
   useEffect(() => {
@@ -327,21 +333,46 @@ const MapaMental = () => {
                   {attachedFiles.length > 0 && (
                     <div className="space-y-2">
                       {attachedFiles.map((file, index) => (
-                        <div key={index} className="flex items-center gap-2 p-2.5 bg-muted rounded-lg">
-                          <File className="h-4 w-4 text-primary shrink-0" />
-                          <span className="text-sm truncate flex-1">{file.name}</span>
-                          {extractedTexts[index] && (
-                            <span className="text-xs text-green-600 bg-green-100 px-1.5 py-0.5 rounded">OCR</span>
+                        <div key={index}>
+                          <div className="flex items-center gap-2 p-2.5 bg-muted rounded-lg">
+                            <File className="h-4 w-4 text-primary shrink-0" />
+                            <span className="text-sm truncate flex-1">{file.name}</span>
+                            {extractedTexts[index] && (
+                              <>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-6 w-6 shrink-0"
+                                  onClick={() => setPreviewIndex(previewIndex === index ? null : index)}
+                                  title="Preview OCR"
+                                >
+                                  <Eye className="h-3.5 w-3.5 text-primary" />
+                                </Button>
+                                <span className="text-xs text-green-600 bg-green-100 px-1.5 py-0.5 rounded">OCR</span>
+                              </>
+                            )}
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6 shrink-0"
+                              onClick={() => removeFile(index)}
+                              disabled={isOcrProcessing}
+                            >
+                              <X className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
+                          {previewIndex === index && ocrResults[index] && (
+                            <MarkdownPreview
+                              text={extractedTexts[index]}
+                              fileName={file.name}
+                              confidence={ocrResults[index].confidence}
+                              method={ocrResults[index].method}
+                              format={ocrResults[index].format}
+                              pagesProcessed={ocrResults[index].pagesProcessed}
+                              onClose={() => setPreviewIndex(null)}
+                              className="mt-2"
+                            />
                           )}
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-6 w-6 shrink-0"
-                            onClick={() => removeFile(index)}
-                            disabled={isOcrProcessing}
-                          >
-                            <X className="h-3.5 w-3.5" />
-                          </Button>
                         </div>
                       ))}
                     </div>

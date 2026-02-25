@@ -11,7 +11,8 @@ import {
   Loader2,
   RefreshCw,
   Image,
-  ScanLine
+  ScanLine,
+  Eye
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
@@ -19,7 +20,8 @@ import * as XLSX from 'xlsx';
 import { ExcelSpreadsheet } from '@/components/analysis/ExcelSpreadsheet';
 import { AnalysisSummary } from '@/components/analysis/AnalysisSummary';
 import { OCRModeSelector, OCRMode } from '@/components/sidebar/OCRModeSelector';
-import { processFileForOCR, cleanOCRText } from '@/lib/ocrService';
+import { processFileForOCR, cleanOCRText, OCRResult } from '@/lib/ocrService';
+import { MarkdownPreview } from '@/components/ocr/MarkdownPreview';
 
 export interface CellError {
   row: number;
@@ -50,6 +52,8 @@ const Analise = () => {
   const [ocrMode, setOcrMode] = useState<OCRMode>('auto');
   const [ocrProgress, setOcrProgress] = useState(0);
   const [isOcrProcessing, setIsOcrProcessing] = useState(false);
+  const [lastOcrResult, setLastOcrResult] = useState<OCRResult | null>(null);
+  const [showOcrPreview, setShowOcrPreview] = useState(false);
   const { toast } = useToast();
 
   const handleFileUpload = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -76,7 +80,8 @@ const Analise = () => {
             ocrMode
           );
           
-          const cleanedText = cleanOCRText(ocrResult.text);
+          const cleanedText = ocrResult.format === 'markdown' ? ocrResult.text : cleanOCRText(ocrResult.text);
+          setLastOcrResult(ocrResult);
           
           // Try to parse as table (basic CSV-like parsing)
           const lines = cleanedText.split('\n').filter(l => l.trim());
@@ -219,6 +224,17 @@ const Analise = () => {
           {fileName && (
             <div className="flex items-center gap-3">
               <Badge variant="outline">{fileName}</Badge>
+              {lastOcrResult && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-1"
+                  onClick={() => setShowOcrPreview(!showOcrPreview)}
+                >
+                  <Eye className="h-3.5 w-3.5" />
+                  OCR
+                </Button>
+              )}
               <Button 
                 onClick={runAIAnalysis} 
                 disabled={isAnalyzing || data.length === 0}
@@ -312,15 +328,28 @@ const Analise = () => {
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
             {/* Analysis Summary Panel */}
-            <div className="lg:col-span-1">
+            <div className="lg:col-span-1 space-y-4">
               <AnalysisSummary 
                 result={analysisResult} 
                 isAnalyzing={isAnalyzing}
                 onReanalyze={runAIAnalysis}
               />
+
+              {/* OCR Preview */}
+              {showOcrPreview && lastOcrResult && (
+                <MarkdownPreview
+                  text={lastOcrResult.format === 'markdown' ? lastOcrResult.text : lastOcrResult.text}
+                  fileName={fileName}
+                  confidence={lastOcrResult.confidence}
+                  method={lastOcrResult.method}
+                  format={lastOcrResult.format}
+                  pagesProcessed={lastOcrResult.pagesProcessed}
+                  onClose={() => setShowOcrPreview(false)}
+                />
+              )}
               
               {/* Upload new file */}
-              <Card className="mt-4">
+              <Card>
                 <CardContent className="p-4">
                   <label className="w-full">
                     <input

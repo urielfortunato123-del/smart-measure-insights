@@ -1,0 +1,104 @@
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
+serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const { imageBase64, fileName, mimeType } = await req.json();
+
+    const MISTRAL_API_KEY = Deno.env.get('MISTRAL_API_KEY');
+    if (!MISTRAL_API_KEY) {
+      throw new Error('MISTRAL_API_KEY não configurada');
+    }
+
+    console.log('Processing OCR with Mistral for:', fileName || 'image');
+
+    // Use Mistral's vision model (Pixtral) for OCR with markdown output
+    const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${MISTRAL_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'mistral-small-latest',
+        messages: [
+          {
+            role: 'user',
+            content: [
+              {
+                type: 'text',
+                text: `Extraia todo o texto desta imagem e retorne em formato Markdown bem estruturado. 
+Se houver tabelas, use a sintaxe de tabela Markdown. 
+Se houver listas, use listas Markdown. 
+Mantenha a hierarquia de títulos com #, ##, ###.
+Preserve números, códigos e valores exatamente como aparecem.
+Retorne APENAS o conteúdo extraído em Markdown, sem explicações adicionais.`
+              },
+              {
+                type: 'image_url',
+                image_url: {
+                  url: `data:${mimeType || 'image/png'};base64,${imageBase64}`
+                }
+              }
+            ]
+          }
+        ],
+        max_tokens: 4096,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Mistral API error:', response.status, errorText);
+
+      if (response.status === 429) {
+        return new Response(
+          JSON.stringify({ success: false, error: 'Limite de requisições Mistral excedido. Tente novamente em alguns segundos.' }),
+          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      if (response.status === 401) {
+        return new Response(
+          JSON.stringify({ success: false, error: 'Chave API Mistral inválida.' }),
+          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      throw new Error(`Mistral API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const markdownText = data.choices?.[0]?.message?.content || '';
+    const tokensUsed = data.usage?.total_tokens || 0;
+
+    console.log('Mistral OCR completed. Tokens used:', tokensUsed);
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        text: markdownText,
+        format: 'markdown',
+        confidence: 95,
+        tokensUsed,
+      }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  } catch (error) {
+    console.error('Mistral OCR error:', error);
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: error instanceof Error ? error.message : 'Erro desconhecido no OCR Mistral',
+      }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  }
+});

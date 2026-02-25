@@ -6,7 +6,8 @@ export interface OCRResult {
   confidence: number;
   processingTime: number;
   pagesProcessed?: number;
-  method?: 'local' | 'cloud';
+  method?: 'local' | 'cloud' | 'mistral';
+  format?: 'plain' | 'markdown';
 }
 
 /**
@@ -95,7 +96,56 @@ export const extractTextCloud = async (
   }
 };
 
-export type OCRMode = 'auto' | 'local' | 'cloud';
+/**
+ * Extrai texto usando Mistral Vision (OCR com output Markdown)
+ */
+export const extractTextMistral = async (
+  file: File,
+  onProgress?: (progress: number) => void
+): Promise<OCRResult> => {
+  const startTime = Date.now();
+
+  try {
+    onProgress?.(10);
+
+    const base64 = await fileToBase64(file);
+    onProgress?.(30);
+
+    const { data, error } = await supabase.functions.invoke('ocr-mistral', {
+      body: {
+        imageBase64: base64,
+        fileName: file.name,
+        mimeType: file.type,
+      },
+    });
+
+    onProgress?.(90);
+
+    if (error) {
+      console.error('Mistral OCR function error:', error);
+      throw new Error(error.message || 'Erro ao processar OCR Mistral');
+    }
+
+    if (!data.success) {
+      throw new Error(data.error || 'Falha no OCR Mistral');
+    }
+
+    onProgress?.(100);
+
+    return {
+      text: data.text,
+      confidence: data.confidence || 95,
+      processingTime: Date.now() - startTime,
+      method: 'mistral',
+      format: 'markdown',
+    };
+  } catch (error) {
+    console.error('Mistral OCR Error:', error);
+    throw new Error('Falha no OCR Mistral');
+  }
+};
+
+export type OCRMode = 'auto' | 'local' | 'cloud' | 'mistral';
 
 /**
  * Extrai texto de imagem com modo selecionável
@@ -105,6 +155,11 @@ export const extractTextFromImage = async (
   onProgress?: (progress: number) => void,
   mode: OCRMode = 'auto'
 ): Promise<OCRResult> => {
+  // Modo Mistral: usa Mistral Vision direto
+  if (mode === 'mistral') {
+    return extractTextMistral(file, onProgress);
+  }
+
   // Modo cloud: usa cloud direto
   if (mode === 'cloud') {
     return extractTextCloud(file, onProgress);
@@ -115,25 +170,22 @@ export const extractTextFromImage = async (
     return extractTextLocal(file, onProgress);
   }
 
-  // Modo auto: híbrido (local primeiro, cloud como fallback)
-  // Se arquivo > 1MB, usa cloud direto por performance
-  if (file.size > 1 * 1024 * 1024) {
-    return extractTextCloud(file, onProgress);
-  }
-
+  // Modo auto: tenta Mistral primeiro, depois local, depois cloud
   try {
-    const result = await extractTextLocal(file, onProgress);
-    
-    // Se confiança muito baixa, tenta cloud
-    if (result.confidence < 50) {
-      console.log('Low confidence from local OCR, trying cloud...');
+    return await extractTextMistral(file, onProgress);
+  } catch (mistralError) {
+    console.warn('Mistral OCR failed, trying local:', mistralError);
+    try {
+      const result = await extractTextLocal(file, onProgress);
+      if (result.confidence < 50) {
+        console.log('Low confidence from local OCR, trying cloud...');
+        return extractTextCloud(file, onProgress);
+      }
+      return result;
+    } catch (localError) {
+      console.warn('Local OCR failed, falling back to cloud:', localError);
       return extractTextCloud(file, onProgress);
     }
-    
-    return result;
-  } catch (localError) {
-    console.warn('Local OCR failed, falling back to cloud:', localError);
-    return extractTextCloud(file, onProgress);
   }
 };
 

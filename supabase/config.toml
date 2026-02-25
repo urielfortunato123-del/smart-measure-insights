@@ -17,3 +17,6 @@ verify_jwt = false
 
 [functions.ocr-extract]
 verify_jwt = false
+
+[functions.ocr-mistral]
+verify_jwt = false

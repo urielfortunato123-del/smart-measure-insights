@@ -199,19 +199,23 @@ export const processFileForOCR = async (
 ): Promise<OCRResult> => {
   const fileType = file.type;
 
-  // Se for imagem, usar OCR com modo selecionado
-  if (fileType.startsWith('image/')) {
-    return extractTextFromImage(file, onProgress, mode);
-  }
-
-  // Se for PDF, indicar para usar IA diretamente (Gemini lê PDFs nativamente)
+  // PDFs: usar Mistral diretamente (suporta multi-página)
   if (fileType === 'application/pdf') {
+    if (mode === 'mistral' || mode === 'auto') {
+      return extractTextMistral(file, onProgress);
+    }
+    // Fallback para outros modos: sinalizar para usar IA
     return {
       text: '__PDF_USE_AI_DIRECTLY__',
       confidence: 100,
       processingTime: 0,
       method: 'local',
     };
+  }
+
+  // Se for imagem, usar OCR com modo selecionado
+  if (fileType.startsWith('image/')) {
+    return extractTextFromImage(file, onProgress, mode);
   }
 
   throw new Error(`Tipo de arquivo não suportado: ${fileType}`);
